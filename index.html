@@ -417,6 +417,34 @@ select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xm
       <div id="absensiList"></div>
       <div class="sticky-save"><button class="btn-primary" id="btnSimpanAbsensi">Simpan Absensi</button></div>
       <p class="hint">Ketuk H / S / I / A untuk menandai kehadiran setiap siswa</p>
+      <button class="btn-secondary" id="btnRekap" style="margin-top:12px">Rekap Bulanan</button>
+    </section>
+
+    <section class="screen" id="scr-rekap">
+      <header class="page-head">
+        <button class="icon-btn" id="btnRekapBack" aria-label="Kembali">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h2 class="page-title">Rekap Bulanan</h2>
+      </header>
+      <p class="date-line">Kelas 4A &middot; SDN Grogol Utara 09</p>
+
+      <div class="datenav">
+        <button class="icon-btn" id="rekapPrev" aria-label="Bulan sebelumnya">&#8249;</button>
+        <div style="flex:1;text-align:center;font-weight:700;font-size:15px" id="rekapLabel"></div>
+        <button class="icon-btn" id="rekapNext" aria-label="Bulan berikutnya">&#8250;</button>
+      </div>
+
+      <div class="stat-strip" style="margin-bottom:12px">
+        <div class="stat-cell ok"><div class="n" id="rekapH">0</div><div class="l">Hadir</div></div>
+        <div class="stat-cell warn"><div class="n" id="rekapS">0</div><div class="l">Sakit</div></div>
+        <div class="stat-cell info"><div class="n" id="rekapI">0</div><div class="l">Izin</div></div>
+        <div class="stat-cell bad"><div class="n" id="rekapA">0</div><div class="l">Alpa</div></div>
+      </div>
+
+      <div id="rekapList"></div>
+      <button class="btn-primary" id="btnSalinRekap" style="margin-top:12px">Salin Rekap</button>
+      <p class="hint" id="rekapHint"></p>
     </section>
 
     <section class="screen" id="scr-siswa">
@@ -1090,6 +1118,7 @@ async function showTab(name, dir){
   if(name === "nilai") await renderNilai();
   if(name === "pemantauan") await renderPemantauan();
   if(name === "pantau-detail") await renderPantauDetail(_pantauDetailNama);
+  if(name === "rekap") await renderRekap();
   if(name === "lainnya") await updatePantauBadge();
 }
 
@@ -1536,6 +1565,15 @@ if(bp) bp.addEventListener("click", () => showTab("lainnya", "fwd"));
 $("#btnPemantauan").addEventListener("click", () => showTab("pemantauan", "fwd"));
 $("#btnPantauBack").addEventListener("click", () => showTab("lainnya", "back"));
 $("#btnPantauDetailBack").addEventListener("click", () => showTab("pemantauan", "back"));
+/* ---- Rekap Bulanan ---- */
+$("#btnRekap").addEventListener("click", () => showTab("rekap", "fwd"));
+$("#btnRekapBack").addEventListener("click", () => showTab("absensi", "back"));
+$("#rekapPrev").addEventListener("click", () => { _rekapBulan = shiftBulan(_rekapBulan || rekapBulanIni(), -1); renderRekap(); });
+$("#rekapNext").addEventListener("click", () => { _rekapBulan = shiftBulan(_rekapBulan || rekapBulanIni(), 1); renderRekap(); });
+$("#btnSalinRekap").addEventListener("click", async () => {
+  const ok = await salinTeks(formatRekap());
+  toast(ok ? "Rekap disalin" : "Gagal menyalin");
+});
 $("#pantauWarn").addEventListener("click", () => showTab("pemantauan", "fwd"));
 $("#btnTambahPantau").addEventListener("click", async () => {
   const p = $("#pantauPicker");
@@ -1610,6 +1648,84 @@ $("#absensiList").addEventListener("click", e => {
     b.classList.toggle("on", b.dataset.st === draft[n]));
   renderAbsensiCounts();
 });
+/* ================= REKAP BULANAN ================= */
+let _rekapBulan = "";
+function rekapBulanIni(){
+  const d = jakartaDate();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0");
+}
+function shiftBulan(ym, delta){
+  let [y,m] = ym.split("-").map(Number);
+  m += delta;
+  while(m < 1){ m += 12; y--; }
+  while(m > 12){ m -= 12; y++; }
+  return y + "-" + String(m).padStart(2,"0");
+}
+/* Hitung rekap per siswa + total kelas untuk bulan "YYYY-MM".
+   Hanya tanggal yang ada datanya yang dihitung. */
+function hitungRekap(att, ym){
+  const per = {};
+  STUDENTS.forEach(n => per[n] = {H:0,S:0,I:0,A:0});
+  const tot = {H:0,S:0,I:0,A:0};
+  let nHari = 0;
+  Object.keys(att).forEach(tgl => {
+    if(!tgl.startsWith(ym + "-")) return;
+    const rec = att[tgl] || {};
+    if(!Object.keys(rec).length) return;
+    nHari++;
+    STUDENTS.forEach(n => {
+      const st = rec[n];
+      if(st === "H"){ per[n].H++; tot.H++; }
+      else if(st === "S"){ per[n].S++; tot.S++; }
+      else if(st === "I"){ per[n].I++; tot.I++; }
+      else if(st === "A"){ per[n].A++; tot.A++; }
+    });
+  });
+  return {per: per, tot: tot, nHari: nHari};
+}
+function badgeRekap(kode, n, bg, fg){
+  return '<span class="badge" style="background:'+bg+';color:'+fg+';font-size:11px;padding:4px 9px">'+kode+' '+n+'</span>';
+}
+let _rekapRows = []; /* [{nama, H, S, I, A}] untuk tombol salin */
+async function renderRekap(){
+  if(!_rekapBulan) _rekapBulan = rekapBulanIni();
+  const ini = rekapBulanIni();
+  const minB = shiftBulan(ini, -12), maxB = shiftBulan(ini, 12);
+  if(_rekapBulan < minB) _rekapBulan = minB;
+  if(_rekapBulan > maxB) _rekapBulan = maxB;
+  const att = await db.getAllAbsensi();
+  const r = hitungRekap(att, _rekapBulan);
+  const [y,m] = _rekapBulan.split("-").map(Number);
+  $("#rekapLabel").textContent = BULAN[m-1] + " " + y;
+  $("#rekapPrev").disabled = _rekapBulan <= minB;
+  $("#rekapNext").disabled = _rekapBulan >= maxB;
+  $("#rekapH").textContent = r.tot.H;
+  $("#rekapS").textContent = r.tot.S;
+  $("#rekapI").textContent = r.tot.I;
+  $("#rekapA").textContent = r.tot.A;
+  _rekapRows = STUDENTS.map((n,i) => ({no:i+1, nama:n, H:r.per[n].H, S:r.per[n].S, I:r.per[n].I, A:r.per[n].A}));
+  $("#rekapList").innerHTML = _rekapRows.map(o =>
+    '<div class="row"><div class="avatar">' + initials(o.nama) + '</div>' +
+    '<div class="row-main"><div class="row-name" style="font-size:13.5px">' + esc(o.nama) + '</div>' +
+    '<div class="row-sub">No. absen ' + o.no + '</div></div>' +
+    '<div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">' +
+    badgeRekap("H", o.H, "#E4EFE6", "var(--success)") +
+    badgeRekap("S", o.S, "#F3E2E2", "var(--danger)") +
+    badgeRekap("I", o.I, "#E2EAF2", "var(--info)") +
+    badgeRekap("A", o.A, "#F5EDDA", "#8A6D1B") +
+    '</div></div>'
+  ).join("");
+  $("#rekapHint").textContent = r.nHari
+    ? r.nHari + " hari tercatat pada bulan ini"
+    : "Belum ada data absensi pada bulan ini";
+}
+function formatRekap(){
+  const [y,m] = _rekapBulan.split("-").map(Number);
+  const lines = ["Rekap Absensi " + BULAN[m-1] + " " + y];
+  _rekapRows.forEach(o =>
+    lines.push(o.no + ". " + o.nama + " - H:" + o.H + " S:" + o.S + " I:" + o.I + " A:" + o.A));
+  return lines.join("\n");
+}
 function renderAbsensiCounts(){
   const c = {H:0,S:0,I:0,A:0};
   Object.keys(draft).forEach(k => { if(c[draft[k]] !== undefined) c[draft[k]]++; });
