@@ -207,6 +207,14 @@ select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xm
 .pantau-del{border:0;background:none;color:#B9B6AC;font-size:22px;line-height:1;cursor:pointer;
   padding:6px;flex-shrink:0;font-family:inherit}
 .pantau-del:active{color:var(--danger)}
+.range-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:14px;margin:12px 0}
+.range-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.range-grid input[type=date]{margin-bottom:0}
+.range-chips{display:flex;gap:8px;margin-top:10px}
+.chip{border:1px solid var(--border);background:var(--surface);border-radius:999px;
+  padding:7px 14px;font-family:inherit;font-size:13px;font-weight:600;color:var(--text);cursor:pointer}
+.chip.active{background:var(--primary);border-color:var(--primary);color:#fff}
 
 /* ---------- sheet / toast ---------- */
 .scrim{position:fixed;inset:0;background:rgba(30,30,30,.4);opacity:0;pointer-events:none;
@@ -516,6 +524,23 @@ select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xm
         <h2 class="page-title">Pemantauan Siswa</h2>
       </header>
       <p class="date-line" id="pantauSub">Pemantauan kesehatan pasca vaksin DBD</p>
+      <div class="range-card">
+        <div class="range-grid">
+          <div>
+            <label class="fld-label" for="pantauDari">Dari</label>
+            <input type="date" id="pantauDari">
+          </div>
+          <div>
+            <label class="fld-label" for="pantauSampai">Sampai</label>
+            <input type="date" id="pantauSampai">
+          </div>
+        </div>
+        <div class="range-chips" role="group" aria-label="Rentang cepat">
+          <button class="chip" data-days="7">7 hari</button>
+          <button class="chip" data-days="14">14 hari</button>
+          <button class="chip" data-days="30">30 hari</button>
+        </div>
+      </div>
       <div class="warn-strip" id="pantauRingkasan" style="display:none" role="status"></div>
       <div id="pantauList"></div>
       <button class="btn-secondary" id="btnTambahPantau" style="margin-top:6px">+ Tambah Siswa</button>
@@ -1214,14 +1239,36 @@ async function renderNilai(){
 }
 
 /* ================= PEMANTAUAN ================= */
-/* Hitung status 7 hari terakhir (termasuk hari ini) dari data absensi. */
-function pantauStats(nama, att, todayISO){
+/* Hitung status dalam rentang tanggal [dariISO..sampaiISO] inklusif dari data absensi. */
+function pantauStatsRange(nama, att, dariISO, sampaiISO){
   const c = {S:0, I:0, A:0};
-  for(let d=0; d<7; d++){
-    const st = (att[shiftISO(todayISO, -d)] || {})[nama];
+  let d = dariISO, guard = 0;
+  while(d <= sampaiISO && guard < 400){
+    const st = (att[d] || {})[nama];
     if(st && c[st] !== undefined) c[st]++;
+    d = shiftISO(d, 1);
+    guard++;
   }
   return c;
+}
+/* Kompatibilitas: 7 hari terakhir termasuk hari ini. */
+function pantauStats(nama, att, todayISO){
+  return pantauStatsRange(nama, att, shiftISO(todayISO, -6), todayISO);
+}
+/* Ambil rentang tanggal pemantauan tersimpan; default 7 hari terakhir s.d. hari ini. */
+async function getPantauRange(){
+  const today = isoOf(jakartaDate());
+  const fb = {dari: shiftISO(today, -6), sampai: today};
+  try{
+    const sv = await db.metaGet("pantau_range", null);
+    if(sv && sv.dari && sv.sampai && sv.dari <= sv.sampai) return {dari: sv.dari, sampai: sv.sampai};
+  }catch(e){}
+  return fb;
+}
+function rentangLabel(dari, sampai, today){
+  const n = Math.round((parseISO(sampai) - parseISO(dari)) / 86400000) + 1;
+  if(sampai === today) return n + " hari terakhir";
+  return fmtShort(dari) + " \u2013 " + fmtShort(sampai);
 }
 
 async function updatePantauBadge(){
@@ -1257,9 +1304,19 @@ async function renderPemantauan(){
   const list = await db.getPemantauan();
   const att = await db.getAllAbsensi();
   const today = isoOf(jakartaDate());
+  const range = await getPantauRange();
+  const dariEl = $("#pantauDari"), sampaiEl = $("#pantauSampai");
+  if(dariEl) dariEl.value = range.dari;
+  if(sampaiEl) sampaiEl.value = range.sampai;
+  const nHari = Math.round((parseISO(range.sampai) - parseISO(range.dari)) / 86400000) + 1;
+  const sub = rentangLabel(range.dari, range.sampai, today);
+  document.querySelectorAll(".range-chips .chip").forEach(ch => {
+    ch.classList.toggle("active",
+      range.sampai === today && (+ch.dataset.days) === nHari);
+  });
   let sakitCount = 0;
   const rows = list.map(nama => {
-    const st = pantauStats(nama, att, today);
+    const st = pantauStatsRange(nama, att, range.dari, range.sampai);
     if(st.S > 0) sakitCount++;
     let badge;
     if(st.S > 0) badge = '<span class="badge" style="background:#F3E2E2;color:var(--danger)">Sakit '+st.S+' hari</span>';
@@ -1267,7 +1324,7 @@ async function renderPemantauan(){
     else badge = '<span class="badge st-h">Sehat</span>';
     return '<div class="row"><div class="avatar">'+initials(nama)+'</div>'+
       '<div class="row-main"><div class="row-name">'+nama+'</div>'+
-      '<div class="row-sub">7 hari terakhir</div></div>'+
+      '<div class="row-sub">'+sub+'</div></div>'+
       badge+
       '<button class="pantau-del" data-nama="'+nama.replace(/"/g,"&quot;")+'" aria-label="Hapus dari pemantauan">&times;</button></div>';
   });
@@ -1275,7 +1332,7 @@ async function renderPemantauan(){
   if(sakitCount > 0){
     rk.style.display = "";
     rk.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>'+
-      '<span>'+sakitCount+' siswa sakit dalam 7 hari terakhir</span>';
+      '<span>'+sakitCount+' siswa sakit dalam rentang '+nHari+' hari</span>';
   }else{
     rk.style.display = "none";
     rk.innerHTML = "";
@@ -1330,6 +1387,22 @@ $("#btnTambahPantau").addEventListener("click", async () => {
   if(buka) await renderPantauPicker();
 });
 $("#searchPantau").addEventListener("input", renderPantauPicker);
+async function onPantauRangeInput(){
+  const dari = $("#pantauDari").value, sampai = $("#pantauSampai").value;
+  if(!dari || !sampai) return;
+  if(dari > sampai){ toast("Tanggal Dari tidak boleh setelah Sampai"); return; }
+  await db.metaSet("pantau_range", {dari: dari, sampai: sampai});
+  await renderPemantauan();
+}
+$("#pantauDari").addEventListener("change", onPantauRangeInput);
+$("#pantauSampai").addEventListener("change", onPantauRangeInput);
+document.querySelectorAll(".range-chips .chip").forEach(ch =>
+  ch.addEventListener("click", async () => {
+    const days = +ch.dataset.days || 7;
+    const sampai = isoOf(jakartaDate());
+    await db.metaSet("pantau_range", {dari: shiftISO(sampai, -(days - 1)), sampai: sampai});
+    await renderPemantauan();
+  }));
 const bt = $("#btnTentang");
 if(bt) bt.addEventListener("click", () => toast("KelasKu 4A \u2014 aplikasi pendamping wali kelas 4A, SDN Grogol Utara 09"));
 $("#btnSimpanPin").addEventListener("click", doSimpanPin);
