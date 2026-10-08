@@ -256,8 +256,9 @@ select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xm
 #scr-login .blob.b1{width:72vw;max-width:480px;aspect-ratio:1;background:#B5E3C4;top:-18vw;right:-16vw}
 #scr-login .blob.b2{width:56vw;max-width:380px;aspect-ratio:1;background:#F5E6B8;bottom:-12vw;left:-14vw}
 .login-wrap{max-width:400px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;
-  align-items:center;justify-content:flex-start;padding:0 20px 32px;position:relative;z-index:2}
+  align-items:center;justify-content:flex-start;padding:0 20px 15px;position:relative;z-index:2}
 .login-illus{width:100vw;max-width:480px;aspect-ratio:13/10;object-fit:cover;display:block;
+  margin-top:-24px;
   -webkit-mask-image:linear-gradient(to bottom,#000 62%,transparent 98%);
   mask-image:linear-gradient(to bottom,#000 62%,transparent 98%)}
 .login-title{font-size:clamp(26px,7vw,32px);font-weight:800;color:#1E3A2A;text-align:center;
@@ -265,7 +266,7 @@ select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xm
 .login-title span{color:#2E7D4F}
 .login-sub{font-size:clamp(13px,3.6vw,15px);font-weight:500;color:#4A6B57;text-align:center;margin:10px 0 0}
 .login-slider{position:relative;width:100%;height:60px;background:#EDF5EF;border-radius:999px;
-  margin-top:34px;overflow:hidden;box-shadow:0 8px 20px rgba(30,58,42,.10);touch-action:none;user-select:none}
+  margin-top:auto;overflow:hidden;box-shadow:0 8px 20px rgba(30,58,42,.10);touch-action:none;user-select:none}
 .login-slider .ls-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:#CDE8D6;border-radius:999px}
 .login-slider .ls-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-size:15px;font-weight:700;color:#4A6B57;pointer-events:none}
@@ -273,7 +274,7 @@ select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xm
   border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;
   font-size:22px;font-weight:800;box-shadow:0 6px 14px rgba(46,125,79,.4);cursor:grab}
 .login-slider.done .ls-thumb{cursor:default}
-.login-cap{margin-top:22px;font-size:12.5px;font-weight:600;color:#4A6B57;text-align:center}
+.login-cap{margin:18px 0 26px;font-size:12.5px;font-weight:600;color:#4A6B57;text-align:center}
 .shake{animation:shake .4s}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
@@ -486,12 +487,12 @@ select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xm
         <img class="login-illus" src="login-ilustrasi.webp" alt="Guru dan siswa">
         <h1 class="login-title">Selamat Datang<br><span>Kembali!</span></h1>
         <p class="login-sub">Kelola absensi, nilai, dan jadwal kelas dengan mudah</p>
+        <p class="login-cap">SDN Grogol Utara 09 · Kelas 4A</p>
         <div class="login-slider" id="loginSlider" role="button" aria-label="Geser untuk masuk" tabindex="0">
           <div class="ls-fill" id="lsFill"></div>
           <div class="ls-txt">Geser untuk masuk</div>
           <div class="ls-thumb" id="lsThumb">→</div>
         </div>
-        <p class="login-cap">SDN Grogol Utara 09 · Kelas 4A</p>
       </div>
     </section>
 
