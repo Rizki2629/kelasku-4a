@@ -212,6 +212,7 @@ select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xm
 .range-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .range-grid input[type=date]{margin-bottom:0}
 .range-chips{display:flex;gap:8px;margin-top:10px}
+.filter-chips{display:flex;gap:8px;margin:12px 0 4px}
 .chip{border:1px solid var(--border);background:var(--surface);border-radius:999px;
   padding:7px 14px;font-family:inherit;font-size:13px;font-weight:600;color:var(--text);cursor:pointer}
 .chip.active{background:var(--primary);border-color:var(--primary);color:#fff}
@@ -542,6 +543,11 @@ select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xm
         </div>
       </div>
       <div class="warn-strip" id="pantauRingkasan" style="display:none" role="status"></div>
+      <div class="filter-chips" id="pantauFilterChips" role="group" aria-label="Filter daftar">
+        <button class="chip active" data-pfilter="semua">Semua</button>
+        <button class="chip" data-pfilter="sakit">Sakit</button>
+      </div>
+      <button class="btn-primary" id="btnSalinSakit" style="display:none;margin:6px 0 10px">Salin Daftar Sakit</button>
       <div id="pantauList"></div>
       <button class="btn-secondary" id="btnTambahPantau" style="margin-top:6px">+ Tambah Siswa</button>
       <div id="pantauPicker" style="display:none;margin-top:12px">
@@ -1270,6 +1276,54 @@ function rentangLabel(dari, sampai, today){
   if(sampai === today) return n + " hari terakhir";
   return fmtShort(dari) + " \u2013 " + fmtShort(sampai);
 }
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c =>
+    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+/* Keterangan sakit terbaru untuk nama dalam rentang; "" bila tidak ada.
+   Data catatan bisa messy (nama kosong / tanggal null) — dilewati dengan aman. */
+function keteranganSakit(nama, dariISO, sampaiISO){
+  const key = (nama || "").trim().toLowerCase();
+  if(!key || !Array.isArray(_pantauCatatan)) return "";
+  let best = null;
+  _pantauCatatan.forEach(e => {
+    if(!e || typeof e !== "object") return;
+    const en = (e.nama || "").trim().toLowerCase();
+    if(!en || en !== key) return;
+    const t = e.tanggal;
+    if(typeof t !== "string" || !t || t < dariISO || t > sampaiISO) return;
+    if(!best || t > best.tanggal) best = e;
+  });
+  return best ? String(best.keterangan || "").trim() : "";
+}
+/* Format salin: "Nama (sakit ket), Nama2 (sakit)" — satu baris, urut abjad.
+   Bila keterangan sudah diawali kata "sakit", tidak diulang. */
+function formatDaftarSakit(items){
+  return items.slice().sort((a,b) => a.nama.localeCompare(b.nama, "id"))
+    .map(it => {
+      const k = (it.ket || "").trim();
+      if(!k) return it.nama + " (sakit)";
+      return it.nama + " (" + (/^sakit\b/i.test(k) ? k : "sakit " + k) + ")";
+    })
+    .join(", ");
+}
+async function salinTeks(teks){
+  try{
+    await navigator.clipboard.writeText(teks);
+    return true;
+  }catch(e){
+    try{
+      const ta = document.createElement("textarea");
+      ta.value = teks;
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return !!ok;
+    }catch(e2){ return false; }
+  }
+}
 
 async function updatePantauBadge(){
   const list = await db.getPemantauan();
@@ -1282,6 +1336,9 @@ async function updatePantauBadge(){
 }
 
 let _pantauPick = [];
+let _pantauCatatan = [];   /* [{tanggal, nama, keterangan}] dari data.json */
+let _pantauFilter = "semua"; /* "semua" | "sakit" */
+let _pantauSickRows = [];    /* [{nama, ket}] untuk tombol salin */
 async function renderPantauPicker(){
   const q = ($("#searchPantau").value || "").toLowerCase().trim();
   const pantau = await db.getPemantauan();
@@ -1314,7 +1371,12 @@ async function renderPemantauan(){
     ch.classList.toggle("active",
       range.sampai === today && (+ch.dataset.days) === nHari);
   });
+  document.querySelectorAll("#pantauFilterChips .chip").forEach(ch => {
+    ch.classList.toggle("active", ch.dataset.pfilter === _pantauFilter);
+  });
   let sakitCount = 0;
+  const isSakit = _pantauFilter === "sakit";
+  const sickRows = [];
   const rows = list.map(nama => {
     const st = pantauStatsRange(nama, att, range.dari, range.sampai);
     if(st.S > 0) sakitCount++;
@@ -1322,12 +1384,21 @@ async function renderPemantauan(){
     if(st.S > 0) badge = '<span class="badge" style="background:#F3E2E2;color:var(--danger)">Sakit '+st.S+' hari</span>';
     else if(st.I > 0) badge = '<span class="badge st-i">Izin '+st.I+' hari</span>';
     else badge = '<span class="badge st-h">Sehat</span>';
-    return '<div class="row"><div class="avatar">'+initials(nama)+'</div>'+
+    const ket = isSakit ? keteranganSakit(nama, range.dari, range.sampai) : "";
+    if(isSakit && st.S > 0) sickRows.push({nama: nama, ket: ket});
+    const subHtml = ket
+      ? '<div class="row-sub">'+esc(ket)+'</div>'
+      : '<div class="row-sub">'+sub+'</div>';
+    return {s: st.S, html:
+      '<div class="row"><div class="avatar">'+initials(nama)+'</div>'+
       '<div class="row-main"><div class="row-name">'+nama+'</div>'+
-      '<div class="row-sub">'+sub+'</div></div>'+
+      subHtml+'</div>'+
       badge+
-      '<button class="pantau-del" data-nama="'+nama.replace(/"/g,"&quot;")+'" aria-label="Hapus dari pemantauan">&times;</button></div>';
-  });
+      '<button class="pantau-del" data-nama="'+nama.replace(/"/g,"&quot;")+'" aria-label="Hapus dari pemantauan">&times;</button></div>'};
+  }).filter(r => !isSakit || r.s > 0);
+  const btnSalin = $("#btnSalinSakit");
+  if(btnSalin) btnSalin.style.display = (isSakit && sickRows.length) ? "" : "none";
+  _pantauSickRows = sickRows;
   const rk = $("#pantauRingkasan");
   if(sakitCount > 0){
     rk.style.display = "";
@@ -1337,8 +1408,10 @@ async function renderPemantauan(){
     rk.style.display = "none";
     rk.innerHTML = "";
   }
-  $("#pantauList").innerHTML = rows.length ? rows.join("")
-    : '<p class="muted center">Belum ada siswa dalam pemantauan.</p>';
+  $("#pantauList").innerHTML = rows.length ? rows.map(r => r.html).join("")
+    : (isSakit
+      ? '<p class="muted center">Tidak ada siswa sakit dalam rentang ini.</p>'
+      : '<p class="muted center">Belum ada siswa dalam pemantauan.</p>');
   document.querySelectorAll(".pantau-del").forEach(b =>
     b.addEventListener("click", async () => {
       const nama = b.dataset.nama;
@@ -1403,6 +1476,17 @@ document.querySelectorAll(".range-chips .chip").forEach(ch =>
     await db.metaSet("pantau_range", {dari: shiftISO(sampai, -(days - 1)), sampai: sampai});
     await renderPemantauan();
   }));
+document.querySelectorAll("#pantauFilterChips .chip").forEach(ch =>
+  ch.addEventListener("click", async () => {
+    _pantauFilter = ch.dataset.pfilter || "semua";
+    await renderPemantauan();
+  }));
+$("#btnSalinSakit").addEventListener("click", async () => {
+  const teks = formatDaftarSakit(_pantauSickRows);
+  if(!teks){ toast("Tidak ada data sakit untuk disalin"); return; }
+  if(await salinTeks(teks)) toast("Daftar sakit disalin");
+  else toast("Gagal menyalin. Coba lagi.");
+});
 const bt = $("#btnTentang");
 if(bt) bt.addEventListener("click", () => toast("KelasKu 4A \u2014 aplikasi pendamping wali kelas 4A, SDN Grogol Utara 09"));
 $("#btnSimpanPin").addEventListener("click", doSimpanPin);
@@ -1637,6 +1721,10 @@ async function tarikData(explicit){
       else if(explicit){ att[iso] = srv.attendance[iso]; updated++; }
     });
     await db.setAllAbsensi(att);
+    if(Array.isArray(srv.catatan)){
+      _pantauCatatan = srv.catatan;
+      await db.metaSet("pantau_catatan", _pantauCatatan);
+    }
     await db.metaSet("excel_sync", Date.now());
     if(srv.updated_at) await db.metaSet("excel_server_ts", {bulan: srv.bulan || "", updated_at: srv.updated_at});
     await loadDraft();
@@ -1761,6 +1849,7 @@ $("#fileRestoreDb").addEventListener("change", async e => {
 /* ================= INIT ================= */
 (async function init(){
   await db.init();
+  _pantauCatatan = await db.metaGet("pantau_catatan", []);
   await loadDraft();
 $("#btnImpor").addEventListener("click", onImporClick);
 $("#fileImpor").addEventListener("change", onFileImpor);
