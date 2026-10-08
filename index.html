@@ -3,680 +3,262 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#8B7CF6">
+<meta name="theme-color" content="#315C45">
 <title>KelasKu 4A — Manajemen Kelas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
 <style>
 :root{
-  --mint:#D9F0E5; --lav:#E7DFF8; --yellow:#FCE9A6; --peach:#FBDCC3;
-  --accent:#8B7CF6; --accent-dark:#6F5FE0;
-  --ink:#2E2A33; --gray:#9A9AA3;
-  --cream:#FFFBF2; --card:#FFFFFF;
-  --green-bg:#DDF6D9; --green-tx:#2F7D33;
-  --blue-bg:#DCEBFF; --blue-tx:#2B5CB8;
-  --red-bg:#FFE0E6; --red-tx:#C2255C;
-  --yellow-bg:#FFF3C9; --yellow-tx:#8A5A00;
-  --shadow:0 10px 26px rgba(90,70,160,.10);
+  --primary:#315C45; --primary-dark:#244735;
+  --cream:#F7F5EF; --surface:#FFFFFF; --surface-alt:#F1F0EA;
+  --text:#252525; --muted:#77756F; --border:#E2E0D8;
+  --success:#39734A; --warning:#B98228; --danger:#B54A4A; --info:#4B6F91;
+  --sh-sm:0 1px 3px rgba(30,30,30,.06);
+  --sh-md:0 4px 12px rgba(30,30,30,.08);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
 body{
-  font-family:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-  background:linear-gradient(160deg,#E7DCF8,#D9CCF1);color:var(--ink);
-  display:flex;justify-content:center;min-height:100dvh;
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  background:var(--cream);color:var(--text);
+  min-height:100dvh;
 }
-.phone{
-  width:100%;max-width:480px;min-height:100dvh;background:var(--cream);
-  position:relative;overflow:hidden;padding-bottom:118px;
-}
+.phone{width:100%;max-width:480px;margin:0 auto;min-height:100dvh;background:var(--cream);
+  position:relative;padding-bottom:92px}
 
 /* ---------- screens ---------- */
-.screen{display:none;padding:20px 18px 8px}
+.screen{display:none;padding:20px 16px 8px}
 .screen.active{display:block}
-.screen.active[data-dir="fwd"]{animation:slideR .32s cubic-bezier(.22,.8,.36,1)}
-.screen.active[data-dir="back"]{animation:slideL .32s cubic-bezier(.22,.8,.36,1)}
-@keyframes slideR{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
-@keyframes slideL{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:none}}
-
-/* ---------- motion system ---------- */
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-.anim{animation:fadeUp .38s cubic-bezier(.22,.8,.36,1) backwards;animation-delay:calc(var(--i,0)*60ms)}
-@keyframes growY{from{transform:scaleY(0)}to{transform:scaleY(1)}}
-.bar-grow{transform-origin:bottom center;animation:growY .5s cubic-bezier(.22,.8,.36,1) backwards;animation-delay:calc(var(--i,0)*90ms)}
-@keyframes pop{0%{transform:scale(.55)}55%{transform:scale(1.18)}100%{transform:scale(1)}}
-.badge.pop{animation:pop .32s cubic-bezier(.22,.8,.36,1)}
-/* press feedback (smooth, transform-only) */
-.btn-pill,.btn-ghost,.btn-circle,.icon-circle,.iconbtn,.dash-card,.row,.tab{transition:transform .14s ease-out}
-.tab{transition:transform .14s ease-out,color .25s ease}
-.btn-pill:active,.btn-ghost:active,.btn-circle:active,.icon-circle:active,.iconbtn:active{transform:scale(.95)}
-.tab:active{transform:scale(.96)}
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
-}
 
 /* ---------- headers ---------- */
-.home-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.home-user{display:flex;align-items:center;gap:12px}
-.hello{font-size:15px;font-weight:800;margin:0}
-.mini-progress{width:76px;height:7px;background:#ECE5FA;border-radius:99px;margin-top:7px;overflow:hidden}
-.mini-progress>div{height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .5s ease}
-.icon-circle{width:46px;height:46px;border-radius:50%;border:0;background:#fff;
-  box-shadow:0 8px 20px rgba(90,70,160,.12);display:flex;align-items:center;justify-content:center;
-  cursor:pointer;flex-shrink:0}
-.icon-circle:active{transform:scale(.94)}
-.icon-circle svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:2;
+.home-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.home-id .t1{font-size:15px;font-weight:700;margin:0}
+.home-id .t2{font-size:13px;color:var(--muted);font-weight:500;margin:3px 0 0}
+.icon-btn{width:42px;height:42px;border-radius:10px;border:1px solid var(--border);background:var(--surface);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--text)}
+.icon-btn:active{background:var(--surface-alt)}
+.icon-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round}
-.home-title-row{display:flex;justify-content:space-between;align-items:flex-start;margin:4px 0 2px}
-.big-title{font-size:31px;font-weight:900;line-height:1.16;margin:0;letter-spacing:-.4px}
-.date-line{font-size:13px;font-weight:700;color:var(--gray);margin:8px 0 16px}
-.page-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.page-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.page-title{font-size:20px;font-weight:700;margin:0;flex:1}
+.date-line{font-size:13px;font-weight:500;color:var(--muted);margin:0 0 16px}
 
-/* ---------- dashboard cards (beranda) ---------- */
-.dash-card{border-radius:28px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow);cursor:pointer}
-.dash-card:active{transform:scale(.99)}
-.dash-card.mint{background:var(--mint)}
-.dash-card.lav{background:var(--lav)}
-.dash-card.peach{background:var(--peach)}
-.dc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
-.dc-icon{width:48px;height:48px;border-radius:17px;background:#fff;display:flex;align-items:center;
-  justify-content:center;box-shadow:0 4px 10px rgba(60,40,120,.08)}
-.dc-icon svg{width:24px;height:24px;stroke:var(--ink);fill:none;stroke-width:2;
-  stroke-linecap:round;stroke-linejoin:round}
-.dc-rating{display:flex;align-items:center;gap:5px;font-size:13.5px;font-weight:800;color:#6E6A77}
-.dc-rating svg{width:16px;height:16px;fill:#F2B84B}
-.dc-label{font-size:12.5px;font-weight:700;color:#6E6A77;margin:0 0 5px}
-.dc-title{font-size:22px;font-weight:900;line-height:1.22;margin:0}
-.dc-line{font-size:13.5px;font-weight:800;color:#4c4a55;margin:8px 0 0}
-.dc-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
-.dc-avatars{display:flex;align-items:center}
-.av{width:36px;height:36px;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;
-  justify-content:center;font-size:11px;font-weight:900;color:#fff;margin-left:-11px;
-  box-shadow:0 3px 8px rgba(60,40,120,.12)}
-.av:first-child{margin-left:0}
-.av.more{background:#fff;color:#6E6A77;font-size:10.5px}
-.dc-arrow{width:46px;height:46px;border-radius:50%;background:#fff;display:flex;align-items:center;
-  justify-content:center;box-shadow:0 6px 14px rgba(60,40,120,.12)}
-.dc-arrow svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:2.4;
-  stroke-linecap:round;stroke-linejoin:round}
+/* ---------- hero ---------- */
+.hero{background:var(--primary);color:#fff;border-radius:16px;padding:20px;margin-bottom:20px}
+.hero p{margin:0;font-size:13px;opacity:.85;font-weight:500}
+.hero h2{margin:6px 0 4px;font-size:22px;font-weight:700;letter-spacing:-.2px}
+.hero .hero-sub{font-size:13px;opacity:.85;font-weight:500}
 
-/* ---------- generic card ---------- */
-.card{background:var(--card);border-radius:26px;box-shadow:var(--shadow);padding:18px;margin-bottom:14px}
-.card-title{font-size:15px;font-weight:900;margin-bottom:6px}
-.muted{color:var(--gray)}
-.small{font-size:12.5px}
-.center{text-align:center}
-.hint{font-size:12.5px;color:var(--gray);text-align:center;font-weight:700;margin:14px 4px 0}
+/* ---------- sections ---------- */
+.sec{margin-bottom:22px}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.sec-title{font-size:16px;font-weight:700;margin:0}
+.sec-link{font-size:13px;font-weight:600;color:var(--primary);background:none;border:0;cursor:pointer;font-family:inherit;padding:4px 0}
+.divider{border:0;border-top:1px solid var(--border);margin:22px 0}
 
-/* ---------- jadwal ---------- */
-.jadwal{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px dashed #EDE7F7}
-.jadwal:last-child{border-bottom:0}
-.jadwal .time{background:var(--lav);color:var(--accent-dark);font-weight:800;font-size:12px;
-  padding:6px 10px;border-radius:999px;flex-shrink:0;min-width:52px;text-align:center}
-.jadwal .mapel{font-weight:800;font-size:14px}
+/* ---------- quick actions ---------- */
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qa{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:14px;cursor:pointer;text-align:left;font-family:inherit;color:var(--text)}
+.qa:active{background:var(--surface-alt)}
+.qa svg{width:22px;height:22px;stroke:var(--primary);fill:none;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.qa span{font-size:14px;font-weight:600}
 
-/* ---------- stat cards (absensi / nilai) ---------- */
-.stat2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
-.stat-card{border-radius:26px;padding:16px;box-shadow:var(--shadow)}
-.stat-card.mint{background:var(--mint)}
-.stat-card.yel{background:var(--yellow)}
-.stat-card.lav{background:var(--lav)}
-.sc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.sc-ico{width:44px;height:44px;border-radius:50%;background:#fff;display:flex;align-items:center;
-  justify-content:center;box-shadow:0 4px 10px rgba(60,40,120,.08)}
-.sc-ico svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:2.2;
-  stroke-linecap:round;stroke-linejoin:round}
-.sc-arrow{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.65);
-  display:flex;align-items:center;justify-content:center}
-.sc-arrow svg{width:16px;height:16px;stroke:var(--ink);fill:none;stroke-width:2.4;
-  stroke-linecap:round;stroke-linejoin:round}
-.sc-num{font-size:36px;font-weight:900;line-height:1}
-.sc-lbl{font-size:13px;font-weight:700;color:#5d5a66;margin-top:4px}
-.avg-card{margin-bottom:14px}
+/* ---------- stat strip ---------- */
+.stat-strip{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.stat-cell{flex:1;padding:12px 6px;text-align:center;border-left:1px solid var(--border)}
+.stat-cell:first-child{border-left:0}
+.stat-cell .n{font-size:20px;font-weight:700;line-height:1.1}
+.stat-cell .l{font-size:11px;color:var(--muted);font-weight:600;margin-top:3px}
+.stat-cell.ok .n{color:var(--success)}
+.stat-cell.warn .n{color:var(--warning)}
+.stat-cell.info .n{color:var(--info)}
+.stat-cell.bad .n{color:var(--danger)}
 
-/* ---------- progress chart ---------- */
-.prog-head{display:flex;align-items:center;gap:8px;margin:2px 2px 10px}
-.prog-head h3{font-size:17px;font-weight:900;margin:0;flex:1}
-.prog-ico{width:34px;height:34px;border-radius:50%;background:#fff;
-  box-shadow:0 6px 14px rgba(90,70,160,.10);display:flex;align-items:center;justify-content:center}
-.prog-ico svg{width:18px;height:18px;stroke:var(--accent-dark);fill:none;stroke-width:2.2;stroke-linecap:round}
-.icon-mini{width:34px;height:34px;border-radius:50%;border:0;background:#fff;
-  box-shadow:0 6px 14px rgba(90,70,160,.10);display:flex;align-items:center;justify-content:center;cursor:pointer}
-.icon-mini svg{width:16px;height:16px;fill:var(--gray)}
-.chart{background:var(--lav);
-  background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.4) 0 12px,transparent 12px 24px);
-  border-radius:26px;padding:20px 16px 14px;box-shadow:var(--shadow);margin-bottom:16px}
-.bars{display:flex;justify-content:space-around;align-items:flex-end;min-height:190px}
-.bar-col{display:flex;flex-direction:column;align-items:center}
-.pill{width:62px;border-radius:999px;background:#fff;box-shadow:0 8px 18px rgba(90,70,160,.14);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
-.pill b{font-size:19px;font-weight:900}
-.pill span{font-size:10.5px;font-weight:800;color:var(--gray)}
-.bar-lbl{font-size:12.5px;font-weight:800;color:#5d5a66;margin-top:10px}
+/* ---------- activity ---------- */
+.act{background:var(--surface);border:1px solid var(--border);border-radius:14px}
+.act-item{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13.5px;font-weight:500}
+.act-item:last-child{border-bottom:0}
+.act-item .d{font-weight:700}
+.act-item .m{color:var(--muted);font-size:12.5px}
 
-/* ---------- absensi controls ---------- */
-.datenav{display:flex;gap:10px;align-items:center;margin-bottom:14px}
-.iconbtn{width:46px;height:46px;border-radius:50%;border:0;background:#fff;
-  box-shadow:0 8px 20px rgba(90,70,160,.12);font-size:22px;font-weight:900;
-  color:var(--accent-dark);cursor:pointer;flex-shrink:0;line-height:1}
-input[type=date]{flex:1;border:0;background:#fff;border-radius:18px;padding:13px 12px;
-  font-family:inherit;font-weight:800;font-size:14px;color:var(--ink);
-  box-shadow:0 8px 20px rgba(90,70,160,.12);min-width:0}
-.summary{text-align:center;font-size:14px;font-weight:700}
+/* ---------- timeline (jadwal) ---------- */
+.tl{position:relative;padding-left:20px;margin:2px 0}
+.tl::before{content:"";position:absolute;left:6px;top:10px;bottom:10px;width:2px;background:var(--border)}
+.tl-item{position:relative;padding:8px 0}
+.tl-item::before{content:"";position:absolute;left:-18px;top:14px;width:8px;height:8px;border-radius:50%;background:var(--primary)}
+.tl-item.rest::before{background:#C9C6BC}
+.tl-time{font-size:12px;color:var(--muted);font-weight:600}
+.tl-mapel{font-size:15px;font-weight:700;margin-top:1px}
 
 /* ---------- rows ---------- */
-.row{display:flex;align-items:center;gap:12px;background:#fff;border-radius:22px;
-  padding:12px 14px;margin-bottom:10px;box-shadow:0 8px 20px rgba(90,70,160,.10);cursor:pointer}
-.row:active{transform:scale(.99)}
+.row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:12px 14px;margin-bottom:8px}
 .row-main{flex:1;min-width:0}
-.row-name{font-weight:800;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.row-sub{font-size:12px;color:var(--gray);font-weight:700}
-.avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-weight:900;font-size:15px;flex-shrink:0;color:var(--ink)}
-.avatar.teacher{background:var(--accent);color:#fff}
-.avatar.big{width:76px;height:76px;font-size:26px;margin:0 auto 10px}
-.badge{font-size:12px;font-weight:800;padding:7px 13px;border-radius:999px;flex-shrink:0}
-.st-h{background:var(--green-bg);color:var(--green-tx)}
-.st-s{background:var(--yellow-bg);color:var(--yellow-tx)}
-.st-i{background:var(--blue-bg);color:var(--blue-tx)}
-.st-a{background:var(--red-bg);color:var(--red-tx)}
-.chev{font-size:22px;font-weight:900;color:#C9C2DC}
+.row-name{font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-sub{font-size:12.5px;color:var(--muted);font-weight:500;margin-top:2px}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--surface-alt);color:var(--primary-dark);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+.chev{color:#B9B6AC;font-size:20px;font-weight:400;flex-shrink:0}
+.badge{font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;flex-shrink:0}
+.st-h{background:#E4EFE6;color:var(--success)}
+.st-s{background:#F5EBD7;color:var(--warning)}
+.st-i{background:#E2EAF2;color:var(--info)}
+.st-a{background:#F3E2E2;color:var(--danger)}
+
+/* ---------- segmented control (absensi) ---------- */
+.seg{display:flex;border:1px solid var(--border);border-radius:9px;overflow:hidden;flex-shrink:0}
+.seg button{border:0;background:var(--surface);padding:8px 10px;font-family:inherit;font-size:13px;
+  font-weight:600;color:var(--muted);cursor:pointer;min-width:38px;min-height:38px}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button.on[data-st="H"]{background:#E4EFE6;color:var(--success)}
+.seg button.on[data-st="S"]{background:#F5EBD7;color:var(--warning)}
+.seg button.on[data-st="I"]{background:#E2EAF2;color:var(--info)}
+.seg button.on[data-st="A"]{background:#F3E2E2;color:var(--danger)}
 
 /* ---------- buttons ---------- */
-.btn-pill{display:block;width:100%;border:0;border-radius:999px;background:var(--ink);color:#fff;
-  font-family:inherit;font-weight:800;font-size:16px;padding:16px;cursor:pointer;
-  box-shadow:0 10px 22px rgba(46,42,51,.25)}
-.btn-pill:active{transform:scale(.98)}
-.btn-ghost{display:block;width:100%;border:0;border-radius:999px;background:#fff;color:var(--ink);
-  font-family:inherit;font-weight:800;font-size:15px;padding:14px;margin-bottom:14px;cursor:pointer;
-  box-shadow:0 8px 20px rgba(90,70,160,.12)}
-.btn-ghost:active{transform:scale(.98)}
-.btn-circle{width:58px;height:58px;border-radius:50%;border:0;background:var(--accent);cursor:pointer;
-  flex-shrink:0;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 10px 22px rgba(139,124,246,.45)}
-.btn-circle:active{transform:scale(.95)}
+.btn-primary{display:block;width:100%;border:0;border-radius:10px;background:var(--primary);color:#fff;
+  font-family:inherit;font-weight:600;font-size:15px;min-height:44px;padding:12px;cursor:pointer}
+.btn-primary:active{background:var(--primary-dark)}
+.btn-secondary{display:block;width:100%;border:1px solid #DAD8D0;border-radius:10px;background:var(--surface);
+  color:var(--text);font-family:inherit;font-weight:600;font-size:14px;min-height:44px;padding:11px;cursor:pointer}
+.btn-secondary:active{background:var(--surface-alt)}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sticky-save{position:sticky;bottom:88px;margin-top:16px;z-index:5}
+.sticky-save .btn-primary{min-height:48px;font-size:15px}
 
-/* ---------- sinkronisasi excel ---------- */
-.sync-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-.sync-row .btn-pill,.sync-row .btn-ghost{padding:13px;font-size:13.5px;margin-bottom:0;
-  display:flex;align-items:center;justify-content:center;gap:8px}
-.sync-row svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2;
-  stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
-.btn-circle svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2.6;
-  stroke-linecap:round;stroke-linejoin:round}
-.sticky-save{position:sticky;bottom:104px;margin-top:16px;z-index:5}
-
-/* ---------- search / select / score ---------- */
-.search{display:flex;align-items:center;gap:10px;background:#fff;border-radius:20px;
-  padding:13px 16px;box-shadow:0 8px 20px rgba(90,70,160,.10);margin-bottom:14px}
-.search svg{width:20px;height:20px;stroke:var(--gray);flex-shrink:0;fill:none;stroke-width:2.4;stroke-linecap:round}
-.search input{border:0;outline:0;flex:1;font-family:inherit;font-weight:700;font-size:15px;
-  background:none;color:var(--ink)}
-.fld-label{display:block;font-size:13px;font-weight:800;color:var(--gray);margin:0 0 8px 4px}
-.select{width:100%;border:0;background:#fff;border-radius:20px;padding:14px 16px;
-  font-family:inherit;font-weight:800;font-size:15px;color:var(--ink);
-  box-shadow:0 8px 20px rgba(90,70,160,.10);margin-bottom:14px;appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238B7CF6' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 16px center}
-.score{width:78px;flex-shrink:0;border:2px solid var(--lav);border-radius:14px;padding:10px 6px;
-  font-family:inherit;font-weight:900;font-size:15px;text-align:center;color:var(--ink);
-  background:var(--cream);outline:none}
-.score:focus{border-color:var(--accent)}
+/* ---------- forms ---------- */
+.fld-label{display:block;font-size:13px;font-weight:600;color:var(--text);margin:0 0 6px}
+select.select,input[type=date]{width:100%;min-height:44px;border:1px solid #D8D6CE;border-radius:9px;
+  background:var(--surface);padding:10px 12px;font-family:inherit;font-size:15px;font-weight:500;
+  color:var(--text);outline:none;margin-bottom:12px}
+select.select:focus,input[type=date]:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(49,92,69,.10)}
+select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23315C45' stroke-width='2.4'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center}
+.search{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid #D8D6CE;
+  border-radius:9px;padding:0 12px;margin-bottom:12px}
+.search svg{width:20px;height:20px;stroke:var(--muted);flex-shrink:0;fill:none;stroke-width:1.8;stroke-linecap:round}
+.search input{border:0;outline:0;flex:1;min-height:44px;font-family:inherit;font-size:15px;
+  font-weight:500;background:none;color:var(--text)}
+.score{width:70px;flex-shrink:0;border:1px solid #D8D6CE;border-radius:9px;padding:9px 6px;
+  font-family:inherit;font-weight:600;font-size:15px;text-align:center;color:var(--text);outline:none;background:var(--surface)}
+.score:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(49,92,69,.10)}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;background:#D8D6CE}
+.dot.good{background:var(--success)}
+.dot.warn{background:var(--warning)}
+.datenav{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.summary{font-size:14px;font-weight:500;color:var(--text);margin:0 0 12px}
+.summary b{font-weight:700}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.center{text-align:center}
+.hint{font-size:12.5px;color:var(--muted);font-weight:500;margin:12px 4px 0;text-align:center}
 
 /* ---------- tab bar ---------- */
-.tabbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);
-  width:min(480px,100%);background:#fff;border-radius:22px 22px 0 0;
-  box-shadow:0 -10px 28px rgba(90,70,160,.16);display:flex;
-  padding:8px 8px calc(8px + env(safe-area-inset-bottom));z-index:50}
-.tab{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:4px;
-  font-family:inherit;font-size:11px;font-weight:800;color:var(--gray);padding:9px 0;
-  border-radius:22px;cursor:pointer;position:relative;z-index:1}
-.tab.active{color:var(--accent-dark)}
-.tab-ind{position:absolute;top:8px;left:8px;width:64px;height:calc(100% - 16px);
-  background:var(--lav);border-radius:22px;z-index:0;
-  transition:left .32s cubic-bezier(.22,.8,.36,1),width .32s cubic-bezier(.22,.8,.36,1)}
-.tab svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tabbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(480px,100%);
+  background:var(--surface);border-top:1px solid var(--border);border-radius:14px 14px 0 0;
+  display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:50}
+.tab{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-family:inherit;font-size:11px;font-weight:600;color:#8A8881;padding:8px 0 6px;cursor:pointer;position:relative}
+.tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab.active{color:var(--primary)}
+.tab.active::before{content:"";position:absolute;top:-7px;left:50%;transform:translateX(-50%);
+  width:24px;height:3px;border-radius:99px;background:var(--primary)}
+
+/* ---------- sidebar (desktop) ---------- */
+.sidebar{display:none}
+@media(min-width:900px){
+  .phone{max-width:1100px;display:flex;padding-bottom:0}
+  #screens{flex:1;min-width:0;max-width:760px}
+  .screen{padding:28px 28px 12px}
+  .tabbar{display:none!important}
+  .sidebar{display:flex;flex-direction:column;width:220px;flex-shrink:0;background:var(--surface);
+    border-right:1px solid var(--border);padding:20px 12px;position:sticky;top:0;height:100dvh}
+  .side-brand{padding:2px 10px 16px;border-bottom:1px solid var(--border);margin-bottom:12px}
+  .side-brand b{font-size:16px;font-weight:700;display:block}
+  .side-brand span{font-size:12px;color:var(--muted);font-weight:500}
+  .sidebar .tab{flex-direction:row;gap:12px;padding:11px 12px;border-radius:10px;font-size:14px;
+    width:100%;align-items:center}
+  .sidebar .tab.active{background:#E7EEE7;color:var(--primary-dark)}
+  .sidebar .tab.active::before{display:none}
+}
+
+/* ---------- lainnya ---------- */
+.menu-group{margin-bottom:22px}
+.menu-label{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--muted);margin:0 0 10px}
+.menu-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px}
+.menu-row{display:flex;align-items:center;justify-content:space-between;width:100%;background:var(--surface);
+  border:1px solid var(--border);border-radius:10px;padding:13px 14px;font-family:inherit;font-size:14px;
+  font-weight:600;color:var(--text);cursor:pointer;margin-bottom:8px;text-align:left}
+.menu-row:active{background:var(--surface-alt)}
+.menu-row.danger{color:var(--danger)}
 
 /* ---------- sheet / toast ---------- */
-.scrim{position:fixed;inset:0;background:rgba(46,42,51,.35);opacity:0;pointer-events:none;
-  transition:opacity .3s;z-index:55}
+.scrim{position:fixed;inset:0;background:rgba(30,30,30,.4);opacity:0;pointer-events:none;
+  transition:opacity .2s;z-index:55}
 .scrim.open{opacity:1;pointer-events:auto}
-.sheet{position:fixed;left:50%;bottom:0;width:min(480px,100%);background:#fff;
-  border-radius:28px 28px 0 0;padding:22px 22px 34px;z-index:60;max-height:82dvh;overflow:auto;
-  transform:translateX(-50%) translateY(105%);transition:transform .32s ease}
+.sheet{position:fixed;left:50%;bottom:0;width:min(480px,100%);background:var(--surface);
+  border-radius:16px 16px 0 0;padding:20px 20px 32px;z-index:60;max-height:82dvh;overflow:auto;
+  transform:translateX(-50%) translateY(105%);transition:transform .2s ease}
 .sheet.open{transform:translateX(-50%) translateY(0)}
-.sheet-x{position:absolute;top:14px;right:18px;border:0;background:var(--lav);color:var(--accent-dark);
-  width:34px;height:34px;border-radius:50%;font-size:20px;font-weight:900;cursor:pointer;line-height:1}
-.sheet-head{text-align:center;margin-bottom:14px}
-.sheet-head h3{margin:6px 0 4px;font-size:19px;font-weight:900}
+.sheet-x{position:absolute;top:12px;right:16px;border:0;background:var(--surface-alt);color:var(--text);
+  width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;line-height:1}
+.sheet-head{text-align:center;margin-bottom:12px}
+.sheet-head h3{margin:8px 0 4px;font-size:18px;font-weight:700}
 .ministats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
-.mini{border-radius:16px;padding:10px 4px;text-align:center}
-.mini .n{font-size:20px;font-weight:900}
-.mini .l{font-size:11px;font-weight:800;color:var(--gray)}
-.toast{position:fixed;bottom:112px;left:50%;transform:translateX(-50%) translateY(16px);
-  background:var(--ink);color:#fff;padding:12px 22px;border-radius:999px;font-weight:800;
-  font-size:14px;opacity:0;transition:opacity .28s ease,transform .28s cubic-bezier(.22,.8,.36,1);z-index:70;pointer-events:none;max-width:90%;text-align:center}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.mini{border:1px solid var(--border);border-radius:10px;padding:10px 4px;text-align:center;background:var(--surface)}
+.mini .n{font-size:18px;font-weight:700}
+.mini .l{font-size:11px;font-weight:600;color:var(--muted)}
+.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);
+  background:var(--text);color:#fff;padding:11px 20px;border-radius:10px;font-weight:600;
+  font-size:13.5px;opacity:0;transition:opacity .2s;z-index:70;pointer-events:none;max-width:90%;text-align:center}
+.toast.show{opacity:1}
 
-/* ---------- onboarding (mirip layar 1 referensi) ---------- */
-#onboarding{position:fixed;inset:0;z-index:100;background:#C9B6E9;display:flex;
-  flex-direction:column;overflow:hidden}
-.onb-art{position:relative;flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
-.onb-art svg.books{width:min(70vw,280px);height:auto;position:relative;z-index:1;
-  animation:fadeUp .55s cubic-bezier(.22,.8,.36,1) backwards}
-.spark{position:absolute;fill:#fff;z-index:0;animation:tw 2.6s ease-in-out infinite}
-@keyframes tw{0%,100%{opacity:.45;transform:scale(.82) rotate(0deg)}50%{opacity:1;transform:scale(1.1) rotate(10deg)}}
-.onb-card{background:#fff;border-radius:34px;margin:0 18px 20px;padding:28px 24px 20px;
-  box-shadow:0 18px 44px rgba(80,55,140,.25);position:relative;z-index:2;
-  animation:fadeUp .5s cubic-bezier(.22,.8,.36,1) .08s backwards}
-.onb-card h1{font-size:30px;font-weight:900;line-height:1.2;margin:0 0 10px;text-align:center}
-.onb-card p{font-size:14px;color:var(--gray);font-weight:600;line-height:1.6;text-align:center;margin:0 0 22px}
-.onb-actions{display:flex;gap:12px;align-items:center}
-.onb-actions .btn-pill{flex:1}
-.home-indicator{width:134px;height:5px;border-radius:99px;background:var(--ink);opacity:.85;margin:18px auto 0}
+/* ---------- onboarding ---------- */
+#onboarding{position:fixed;inset:0;z-index:100;background:var(--cream);display:flex;
+  align-items:center;justify-content:center;padding:24px}
+.onb-inner{max-width:340px;width:100%;text-align:center}
+.onb-logo{width:72px;height:72px;border-radius:16px;background:var(--primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;margin:0 auto 20px}
+.onb-inner h1{font-size:26px;font-weight:700;margin:0 0 10px;letter-spacing:-.3px}
+.onb-inner p{font-size:14.5px;color:var(--muted);font-weight:500;line-height:1.6;margin:0 0 28px}
 
 /* ---------- login ---------- */
-.login-wrap{max-width:400px;margin:0 auto;padding-top:6px}
-.login-robot{display:flex;justify-content:center;margin-bottom:2px}
-.login-robot svg{width:148px;height:auto}
-.login-card{padding:24px 20px}
-.pin-input{width:100%;border:2px solid var(--lav);border-radius:18px;padding:14px 10px;
-  font-family:inherit;font-weight:900;font-size:22px;text-align:center;letter-spacing:8px;
-  text-indent:8px;color:var(--ink);background:var(--cream);outline:none;margin-bottom:12px}
-.pin-input:focus{border-color:var(--accent)}
-.login-err{color:#C2255C;font-size:13px;font-weight:800;text-align:center;min-height:20px;margin:2px 0 10px}
-@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
-.shake{animation:shake .45s cubic-bezier(.36,.07,.19,.97)}
+.login-wrap{max-width:380px;margin:0 auto;padding:56px 4px 20px}
+.login-brand{text-align:center;margin-bottom:28px}
+.login-logo{width:64px;height:64px;border-radius:16px;background:var(--primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;margin:0 auto 14px}
+.login-brand h1{font-size:24px;font-weight:700;margin:0;letter-spacing:-.3px}
+.login-brand p{color:var(--muted);font-size:14px;font-weight:500;margin:6px 0 0}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px}
+.pin-input{width:100%;min-height:52px;border:1px solid #D8D6CE;border-radius:9px;padding:12px 10px;
+  font-family:inherit;font-weight:700;font-size:22px;text-align:center;letter-spacing:10px;
+  text-indent:10px;color:var(--text);background:var(--surface);outline:none;margin-bottom:12px}
+.pin-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(49,92,69,.10)}
+.login-err{color:var(--danger);font-size:13px;font-weight:600;text-align:center;min-height:20px;margin:2px 0 10px}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.shake{animation:shake .4s}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+
 </style>
 </head>
 <body>
 <div class="phone" id="phone">
-
-  <!-- ============ ONBOARDING ============ -->
-  <div id="onboarding">
-    <div class="onb-art">
-      <svg class="spark" style="left:12%;top:12%" width="26" height="26" viewBox="-12 -12 24 24"><path d="M0 -12 C 1.5 -4 4 -1.5 12 0 C 4 1.5 1.5 4 0 12 C -1.5 4 -4 1.5 -12 0 C -4 -1.5 -1.5 -4 0 -12 Z"/></svg>
-      <svg class="spark" style="left:82%;top:9%;animation-delay:.7s" width="18" height="18" viewBox="-12 -12 24 24"><path d="M0 -12 C 1.5 -4 4 -1.5 12 0 C 4 1.5 1.5 4 0 12 C -1.5 4 -4 1.5 -12 0 C -4 -1.5 -1.5 -4 0 -12 Z"/></svg>
-      <svg class="spark" style="left:70%;top:32%;animation-delay:1.3s" width="32" height="32" viewBox="-12 -12 24 24"><path d="M0 -12 C 1.5 -4 4 -1.5 12 0 C 4 1.5 1.5 4 0 12 C -1.5 4 -4 1.5 -12 0 C -4 -1.5 -1.5 -4 0 -12 Z"/></svg>
-      <svg class="spark" style="left:16%;top:38%;animation-delay:1.9s" width="15" height="15" viewBox="-12 -12 24 24"><path d="M0 -12 C 1.5 -4 4 -1.5 12 0 C 4 1.5 1.5 4 0 12 C -1.5 4 -4 1.5 -12 0 C -4 -1.5 -1.5 -4 0 -12 Z"/></svg>
-      <svg class="spark" style="left:88%;top:52%;animation-delay:.4s" width="22" height="22" viewBox="-12 -12 24 24"><path d="M0 -12 C 1.5 -4 4 -1.5 12 0 C 4 1.5 1.5 4 0 12 C -1.5 4 -4 1.5 -12 0 C -4 -1.5 -1.5 -4 0 -12 Z"/></svg>
-      <svg class="spark" style="left:8%;top:62%;animation-delay:2.2s" width="20" height="20" viewBox="-12 -12 24 24"><path d="M0 -12 C 1.5 -4 4 -1.5 12 0 C 4 1.5 1.5 4 0 12 C -1.5 4 -4 1.5 -12 0 C -4 -1.5 -1.5 -4 0 -12 Z"/></svg>
-      <svg class="books" viewBox="0 0 240 210" aria-hidden="true">
-        <ellipse cx="120" cy="192" rx="88" ry="11" fill="#B79CE0"/>
-        <!-- books prop -->
-        <g>
-          <rect x="172" y="160" width="48" height="26" rx="7" fill="#FCE9A6"/>
-          <rect x="172" y="160" width="11" height="26" rx="7" fill="#F2B84B"/>
-          <rect x="187" y="165" width="27" height="16" rx="4" fill="#ffffff"/>
-          <rect x="176" y="136" width="44" height="24" rx="7" fill="#FBDCC3"/>
-          <rect x="176" y="136" width="10" height="24" rx="7" fill="#E8A87C"/>
-          <rect x="190" y="141" width="24" height="14" rx="4" fill="#ffffff"/>
-        </g>
-        <!-- antenna -->
-        <line x1="105" y1="38" x2="105" y2="18" stroke="#6C99E0" stroke-width="6" stroke-linecap="round"/>
-        <circle cx="105" cy="12" r="8" fill="#F2B84B"/>
-        <circle cx="102" cy="9" r="2.5" fill="#FFE9A8"/>
-        <!-- ears -->
-        <circle cx="50" cy="74" r="10" fill="#F2B84B"/>
-        <circle cx="160" cy="74" r="10" fill="#F2B84B"/>
-        <!-- head -->
-        <rect x="46" y="38" width="118" height="82" rx="32" fill="#A8C5F2"/>
-        <!-- eyes -->
-        <circle cx="88" cy="74" r="13" fill="#ffffff"/>
-        <circle cx="122" cy="74" r="13" fill="#ffffff"/>
-        <circle cx="90" cy="76" r="6" fill="#2E2A33"/>
-        <circle cx="120" cy="76" r="6" fill="#2E2A33"/>
-        <circle cx="92" cy="74" r="2.2" fill="#ffffff"/>
-        <circle cx="122" cy="74" r="2.2" fill="#ffffff"/>
-        <!-- cheeks -->
-        <circle cx="70" cy="94" r="7" fill="#FFB6C9" opacity=".85"/>
-        <circle cx="140" cy="94" r="7" fill="#FFB6C9" opacity=".85"/>
-        <!-- smile -->
-        <path d="M94 96 Q105 108 116 96" stroke="#2E2A33" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <!-- neck -->
-        <rect x="100" y="118" width="10" height="12" fill="#6C99E0"/>
-        <!-- left arm -->
-        <line x1="70" y1="134" x2="48" y2="160" stroke="#6C99E0" stroke-width="12" stroke-linecap="round"/>
-        <circle cx="46" cy="162" r="8" fill="#6C99E0"/>
-        <!-- right arm waving -->
-        <line x1="140" y1="134" x2="166" y2="98" stroke="#6C99E0" stroke-width="12" stroke-linecap="round"/>
-        <circle cx="168" cy="94" r="8" fill="#6C99E0"/>
-        <line x1="182" y1="78" x2="190" y2="68" stroke="#F2B84B" stroke-width="4" stroke-linecap="round"/>
-        <line x1="190" y1="90" x2="200" y2="86" stroke="#F2B84B" stroke-width="4" stroke-linecap="round"/>
-        <line x1="186" y1="104" x2="196" y2="106" stroke="#F2B84B" stroke-width="4" stroke-linecap="round"/>
-        <!-- body -->
-        <rect x="72" y="128" width="66" height="48" rx="18" fill="#9D8DF2"/>
-        <rect x="86" y="138" width="38" height="22" rx="11" fill="#B7A9F7"/>
-        <circle cx="105" cy="149" r="7" fill="#FCE9A6"/>
-        <!-- legs & feet -->
-        <rect x="86" y="172" width="14" height="18" rx="7" fill="#6C99E0"/>
-        <rect x="110" y="172" width="14" height="18" rx="7" fill="#6C99E0"/>
-        <ellipse cx="93" cy="192" rx="12" ry="6" fill="#5B87D6"/>
-        <ellipse cx="117" cy="192" rx="12" ry="6" fill="#5B87D6"/>
-      </svg>
-    </div>
-    <div class="onb-card">
-      <h1>Kelola Kelas<br>4A</h1>
-      <p>Absensi, nilai, dan data siswa dalam satu genggaman.</p>
-      <div class="onb-actions">
-        <button class="btn-pill" id="btnMulai">Mulai</button>
-        <button class="btn-circle" id="btnMulai2" aria-label="Mulai">
-          <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-        </button>
-      </div>
-      <div class="home-indicator"></div>
-    </div>
-  </div>
-
-  <!-- ============ SCREENS ============ -->
-  <main id="screens">
-
-    <section class="screen" id="scr-beranda">
-      <header class="home-head">
-        <div class="home-user">
-          <div class="avatar teacher">RP</div>
-          <div>
-            <p class="hello">Halo, Pak Rizki</p>
-            <div class="mini-progress"><div id="miniPct"></div></div>
-          </div>
-        </div>
-        <div style="display:flex;gap:10px">
-          <button class="icon-circle" id="btnLogout" aria-label="Keluar">
-            <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
-          </button>
-          <button class="icon-circle" id="btnBell" aria-label="Notifikasi">
-            <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-          </button>
-        </div>
-      </header>
-      <div class="home-title-row">
-        <h2 class="big-title">Progres<br>Hari Ini</h2>
-        <button class="icon-circle" id="btnGoSearch" aria-label="Cari siswa">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        </button>
-      </div>
-      <p class="date-line" id="berandaDate"></p>
-
-      <div class="dash-card mint" data-go="absensi">
-        <div class="dc-top">
-          <span class="dc-icon">
-            <svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14l2 2 4-4"/></svg>
-          </span>
-          <span class="dc-rating">
-            <svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>
-            <b id="dcHadirPct">–</b>
-          </span>
-        </div>
-        <p class="dc-label">Absensi</p>
-        <h3 class="dc-title">Kehadiran<br>Hari Ini</h3>
-        <p class="dc-line" id="dcHadirLine">–</p>
-        <div class="dc-bottom">
-          <div class="dc-avatars" id="dcAvatars"></div>
-          <span class="dc-arrow">
-            <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-          </span>
-        </div>
-      </div>
-
-      <div class="dash-card lav" data-go="nilai">
-        <div class="dc-top">
-          <span class="dc-icon">
-            <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M8 17v-5M13 17V8M18 17v-8"/></svg>
-          </span>
-          <span class="dc-arrow">
-            <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-          </span>
-        </div>
-        <p class="dc-label">Penilaian</p>
-        <h3 class="dc-title">Nilai &amp;<br>Rata-rata</h3>
-        <p class="dc-line" id="dcNilaiLine">–</p>
-      </div>
-
-      <div class="dash-card peach" data-go="jadwal">
-        <div class="dc-top">
-          <span class="dc-icon">
-            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="4"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-          </span>
-          <span class="dc-arrow">
-            <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-          </span>
-        </div>
-        <p class="dc-label">Jadwal</p>
-        <h3 class="dc-title">Pelajaran<br>Hari Ini</h3>
-        <p class="dc-line" id="dcJadwalLine">–</p>
-      </div>
-
-      <div class="card" id="jadwalCard">
-        <div class="card-title">Jadwal Hari Ini</div>
-        <div id="jadwalList"></div>
-      </div>
-
-      <div class="card" id="syncCard">
-        <div class="card-title">Sinkronisasi Excel</div>
-        <p class="small muted" id="syncInfo" style="margin:2px 0 0">Belum pernah sinkron.</p>
-        <button class="btn-pill" id="btnTarik" style="margin-bottom:10px">
-          <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px;margin-right:6px"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>
-          Tarik Data Terbaru
-        </button>
-        <div class="sync-row" style="margin-top:0">
-          <button class="btn-ghost" id="btnImpor">
-            <svg viewBox="0 0 24 24"><path d="M12 16V4"/><path d="M6 10l6-6 6 6"/><path d="M4 20h16"/></svg>
-            Impor dari Excel
-          </button>
-          <button class="btn-ghost" id="btnEkspor">
-            <svg viewBox="0 0 24 24"><path d="M12 4v12"/><path d="M6 14l6 6 6-6"/><path d="M4 20h16"/></svg>
-            Ekspor ke Excel
-          </button>
-        </div>
-        <input type="file" id="fileImpor" accept=".xlsm,.xlsx,.xls" hidden>
-        <div class="sync-row" style="margin-top:10px">
-          <button class="btn-ghost" id="btnBackupDb">
-            <svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-            Backup Database
-          </button>
-          <button class="btn-ghost" id="btnRestoreDb">
-            <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
-            Restore
-          </button>
-        </div>
-        <input type="file" id="fileRestoreDb" accept=".sqlite,.db,.json" hidden>
-      </div>
-    </section>
-
-    <section class="screen" id="scr-absensi">
-      <header class="page-head">
-        <button class="icon-circle" data-back aria-label="Kembali">
-          <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-        </button>
-        <button class="icon-circle" id="btnAbsMenu" aria-label="Menu">
-          <svg viewBox="0 0 24 24" style="fill:var(--ink);stroke:none"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
-        </button>
-      </header>
-      <h2 class="big-title">Absensi<br>Kelas</h2>
-      <p class="date-line" id="absensiDateLabel"></p>
-
-      <div class="stat2">
-        <div class="stat-card mint">
-          <div class="sc-top">
-            <span class="sc-ico">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5.5"/></svg>
-            </span>
-            <span class="sc-arrow">
-              <svg viewBox="0 0 24 24"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
-            </span>
-          </div>
-          <div class="sc-num" id="statHadir">0</div>
-          <div class="sc-lbl">Hadir</div>
-        </div>
-        <div class="stat-card yel">
-          <div class="sc-top">
-            <span class="sc-ico">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
-            </span>
-            <span class="sc-arrow">
-              <svg viewBox="0 0 24 24"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
-            </span>
-          </div>
-          <div class="sc-num" id="statSakit">0</div>
-          <div class="sc-lbl">Sakit</div>
-        </div>
-      </div>
-
-      <div class="prog-head">
-        <span class="prog-ico">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.6 2.6 0 1 1 3.7 2.4c-.9.5-1.3 1-1.3 1.9"/><path d="M12 17h.01"/></svg>
-        </span>
-        <h3>Progress</h3>
-        <button class="icon-mini" id="btnProgMenu" aria-label="Opsi">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
-        </button>
-      </div>
-      <div class="chart"><div class="bars" id="bars3"></div></div>
-
-      <div class="datenav">
-        <button class="iconbtn" id="prevDay" aria-label="Hari sebelumnya">&#8249;</button>
-        <input type="date" id="datePicker" aria-label="Pilih tanggal">
-        <button class="iconbtn" id="nextDay" aria-label="Hari berikutnya">&#8250;</button>
-      </div>
-      <div class="card summary" id="absensiSummary"></div>
-      <button class="btn-ghost" id="btnAllHadir">Tandai semua hadir</button>
-      <div id="absensiList"></div>
-      <div class="sticky-save"><button class="btn-pill" id="btnSimpanAbsensi">Simpan Absensi</button></div>
-      <p class="hint">Ketuk baris siswa untuk mengganti status: Hadir &rarr; Sakit &rarr; Izin &rarr; Alpa</p>
-    </section>
-
-    <section class="screen" id="scr-siswa">
-      <header class="page-head">
-        <button class="icon-circle" data-back aria-label="Kembali">
-          <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-        </button>
-        <span class="icon-circle" style="visibility:hidden" aria-hidden="true"></span>
-      </header>
-      <h2 class="big-title">Data<br>Siswa</h2>
-      <p class="date-line">Kelas 4A &bull; 32 siswa &bull; SDN Grogol Utara 09</p>
-      <div class="search">
-        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        <input id="searchSiswa" type="search" placeholder="Cari nama siswa..." autocomplete="off">
-      </div>
-      <div id="siswaList"></div>
-    </section>
-
-    <section class="screen" id="scr-nilai">
-      <header class="page-head">
-        <button class="icon-circle" data-back aria-label="Kembali">
-          <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-        </button>
-        <span class="icon-circle" style="visibility:hidden" aria-hidden="true"></span>
-      </header>
-      <h2 class="big-title">Nilai<br>Siswa</h2>
-      <p class="date-line">Kelola nilai siswa</p>
-      <label class="fld-label" for="mapelSelect">Mata pelajaran</label>
-      <select id="mapelSelect" class="select"></select>
-      <div class="stat-card mint avg-card">
-        <div class="sc-top">
-          <span class="sc-ico">
-            <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M8 17v-5M13 17V8M18 17v-8"/></svg>
-          </span>
-        </div>
-        <div class="sc-num" id="avgLabel">&ndash;</div>
-        <div class="sc-lbl">Rata-rata kelas</div>
-      </div>
-      <div id="nilaiList"></div>
-      <div class="sticky-save"><button class="btn-pill" id="btnSimpanNilai">Simpan Nilai</button></div>
-    </section>
-  
-    <section class="screen" id="scr-login">
-      <div class="login-wrap">
-        <div class="login-robot">
-          <svg class="books" viewBox="0 0 240 210" aria-hidden="true">
-        <ellipse cx="120" cy="192" rx="88" ry="11" fill="#B79CE0"/>
-        <!-- books prop -->
-        <g>
-          <rect x="172" y="160" width="48" height="26" rx="7" fill="#FCE9A6"/>
-          <rect x="172" y="160" width="11" height="26" rx="7" fill="#F2B84B"/>
-          <rect x="187" y="165" width="27" height="16" rx="4" fill="#ffffff"/>
-          <rect x="176" y="136" width="44" height="24" rx="7" fill="#FBDCC3"/>
-          <rect x="176" y="136" width="10" height="24" rx="7" fill="#E8A87C"/>
-          <rect x="190" y="141" width="24" height="14" rx="4" fill="#ffffff"/>
-        </g>
-        <!-- antenna -->
-        <line x1="105" y1="38" x2="105" y2="18" stroke="#6C99E0" stroke-width="6" stroke-linecap="round"/>
-        <circle cx="105" cy="12" r="8" fill="#F2B84B"/>
-        <circle cx="102" cy="9" r="2.5" fill="#FFE9A8"/>
-        <!-- ears -->
-        <circle cx="50" cy="74" r="10" fill="#F2B84B"/>
-        <circle cx="160" cy="74" r="10" fill="#F2B84B"/>
-        <!-- head -->
-        <rect x="46" y="38" width="118" height="82" rx="32" fill="#A8C5F2"/>
-        <!-- eyes -->
-        <circle cx="88" cy="74" r="13" fill="#ffffff"/>
-        <circle cx="122" cy="74" r="13" fill="#ffffff"/>
-        <circle cx="90" cy="76" r="6" fill="#2E2A33"/>
-        <circle cx="120" cy="76" r="6" fill="#2E2A33"/>
-        <circle cx="92" cy="74" r="2.2" fill="#ffffff"/>
-        <circle cx="122" cy="74" r="2.2" fill="#ffffff"/>
-        <!-- cheeks -->
-        <circle cx="70" cy="94" r="7" fill="#FFB6C9" opacity=".85"/>
-        <circle cx="140" cy="94" r="7" fill="#FFB6C9" opacity=".85"/>
-        <!-- smile -->
-        <path d="M94 96 Q105 108 116 96" stroke="#2E2A33" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <!-- neck -->
-        <rect x="100" y="118" width="10" height="12" fill="#6C99E0"/>
-        <!-- left arm -->
-        <line x1="70" y1="134" x2="48" y2="160" stroke="#6C99E0" stroke-width="12" stroke-linecap="round"/>
-        <circle cx="46" cy="162" r="8" fill="#6C99E0"/>
-        <!-- right arm waving -->
-        <line x1="140" y1="134" x2="166" y2="98" stroke="#6C99E0" stroke-width="12" stroke-linecap="round"/>
-        <circle cx="168" cy="94" r="8" fill="#6C99E0"/>
-        <line x1="182" y1="78" x2="190" y2="68" stroke="#F2B84B" stroke-width="4" stroke-linecap="round"/>
-        <line x1="190" y1="90" x2="200" y2="86" stroke="#F2B84B" stroke-width="4" stroke-linecap="round"/>
-        <line x1="186" y1="104" x2="196" y2="106" stroke="#F2B84B" stroke-width="4" stroke-linecap="round"/>
-        <!-- body -->
-        <rect x="72" y="128" width="66" height="48" rx="18" fill="#9D8DF2"/>
-        <rect x="86" y="138" width="38" height="22" rx="11" fill="#B7A9F7"/>
-        <circle cx="105" cy="149" r="7" fill="#FCE9A6"/>
-        <!-- legs & feet -->
-        <rect x="86" y="172" width="14" height="18" rx="7" fill="#6C99E0"/>
-        <rect x="110" y="172" width="14" height="18" rx="7" fill="#6C99E0"/>
-        <ellipse cx="93" cy="192" rx="12" ry="6" fill="#5B87D6"/>
-        <ellipse cx="117" cy="192" rx="12" ry="6" fill="#5B87D6"/>
-      </svg>
-        </div>
-        <h2 class="big-title center">Selamat<br>Datang</h2>
-        <p class="muted small center" style="margin:8px 4px 18px;font-weight:700">Masuk untuk mengelola Kelas 4A</p>
-        <div class="card login-card" id="loginCard">
-          <div id="loginSetup">
-            <label class="fld-label" for="pinBaru">Buat PIN (6 digit angka)</label>
-            <input class="pin-input" id="pinBaru" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="new-password" aria-label="Buat PIN">
-            <label class="fld-label" for="pinKonfirmasi">Konfirmasi PIN</label>
-            <input class="pin-input" id="pinKonfirmasi" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="new-password" aria-label="Konfirmasi PIN">
-            <p class="login-err" id="setupErr"></p>
-            <button class="btn-pill" id="btnSimpanPin">Simpan PIN</button>
-          </div>
-          <div id="loginMasuk" style="display:none">
-            <label class="fld-label" for="pinMasuk">PIN (6 digit angka)</label>
-            <input class="pin-input" id="pinMasuk" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="current-password" aria-label="PIN">
-            <p class="login-err" id="masukErr"></p>
-            <button class="btn-pill" id="btnMasuk">Masuk</button>
-          </div>
-        </div>
-        <p class="hint">PIN tersimpan hanya di perangkat ini</p>
-      </div>
-    </section>
-  </main>
-
-  <!-- ============ TAB BAR ============ -->
-  <nav class="tabbar" aria-label="Navigasi utama">
-    <span class="tab-ind" aria-hidden="true"></span>
+  <aside class="sidebar" aria-label="Navigasi">
+    <div class="side-brand"><b>KelasKu 4A</b><span>SDN Grogol Utara 09</span></div>
     <button class="tab active" data-tab="beranda">
       <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>
       <span>Beranda</span>
     </button>
     <button class="tab" data-tab="absensi">
-      <svg viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2.5"/><path d="M9 4a3 3 0 016 0"/><path d="M9.5 13.5l2 2 3.5-4"/></svg>
+      <svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2h2"/><path d="M9 14l2 2 4-4"/></svg>
       <span>Absensi</span>
     </button>
     <button class="tab" data-tab="siswa">
@@ -686,6 +268,248 @@ input[type=date]{flex:1;border:0;background:#fff;border-radius:18px;padding:13px
     <button class="tab" data-tab="nilai">
       <svg viewBox="0 0 24 24"><path d="M4 20V11"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M2.5 20h19"/></svg>
       <span>Nilai</span>
+    </button>
+    <button class="tab" data-tab="lainnya">
+      <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+      <span>Lainnya</span>
+    </button>
+  </aside>
+
+  <!-- ============ ONBOARDING ============ -->
+  <div id="onboarding">
+    <div class="onb-inner">
+      <div class="onb-logo">4A</div>
+      <h1>KelasKu 4A</h1>
+      <p>Catat kehadiran, kelola nilai, dan pantau kegiatan kelas dalam satu aplikasi.</p>
+      <button class="btn-primary" id="btnMulai">Mulai</button>
+    </div>
+  </div>
+
+  <!-- ============ SCREENS ============ -->
+  <main id="screens">
+
+    <section class="screen" id="scr-beranda">
+      <header class="home-head">
+        <div class="home-id">
+          <p class="t1">Muhammad Rizki Pratama, S.Pd</p>
+          <p class="t2">Kelas 4A &middot; <span id="berandaDate"></span></p>
+        </div>
+        <button class="icon-btn" id="btnProfil" aria-label="Profil">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
+        </button>
+      </header>
+
+      <div class="hero">
+        <p>Selamat datang kembali</p>
+        <h2>Kelas 4A</h2>
+        <p class="hero-sub" id="heroCount">32 siswa</p>
+      </div>
+
+      <div class="sec">
+        <div class="qa-grid">
+          <button class="qa" data-go="absensi">
+            <svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14l2 2 4-4"/></svg>
+            <span>Absensi</span>
+          </button>
+          <button class="qa" data-go="nilai">
+            <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M8 17v-5M13 17V8M18 17v-8"/></svg>
+            <span>Nilai</span>
+          </button>
+          <button class="qa" data-go="siswa">
+            <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.8"/><path d="M16.2 14.7c2.8.4 4.8 2.4 4.8 5.3"/></svg>
+            <span>Siswa</span>
+          </button>
+          <button class="qa" data-go="jadwal">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span>Jadwal</span>
+          </button>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="sec">
+        <div class="sec-head">
+          <h3 class="sec-title">Hari ini</h3>
+          <button class="sec-link" data-go="absensi">Isi absensi</button>
+        </div>
+        <div class="stat-strip">
+          <div class="stat-cell ok"><div class="n" id="todayHadir">0</div><div class="l">Hadir</div></div>
+          <div class="stat-cell warn"><div class="n" id="todaySakit">0</div><div class="l">Sakit</div></div>
+          <div class="stat-cell info"><div class="n" id="todayIzin">0</div><div class="l">Izin</div></div>
+          <div class="stat-cell bad"><div class="n" id="todayAlpa">0</div><div class="l">Alpa</div></div>
+        </div>
+        <p class="small muted" id="todayLine" style="margin:8px 2px 0"></p>
+      </div>
+
+      <hr class="divider">
+
+      <div class="sec" id="jadwalCard">
+        <div class="sec-head">
+          <h3 class="sec-title" id="jadwalTitle">Jadwal hari ini</h3>
+        </div>
+        <div class="tl" id="jadwalList"></div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="sec">
+        <div class="sec-head">
+          <h3 class="sec-title">Aktivitas terbaru</h3>
+        </div>
+        <div class="act" id="aktivitasList"></div>
+      </div>
+    </section>
+
+    <section class="screen" id="scr-absensi">
+      <header class="page-head">
+        <button class="icon-btn" data-back aria-label="Kembali">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h2 class="page-title">Kehadiran Siswa</h2>
+      </header>
+      <p class="date-line" id="absensiDateLabel"></p>
+      <p class="date-line" style="margin-top:-12px">Kelas 4A &middot; SDN Grogol Utara 09</p>
+
+      <div class="stat-strip" style="margin-bottom:12px">
+        <div class="stat-cell ok"><div class="n" id="statHadir">0</div><div class="l">Hadir</div></div>
+        <div class="stat-cell warn"><div class="n" id="statSakit">0</div><div class="l">Sakit</div></div>
+        <div class="stat-cell info"><div class="n" id="statIzin">0</div><div class="l">Izin</div></div>
+        <div class="stat-cell bad"><div class="n" id="statAlpa">0</div><div class="l">Alpa</div></div>
+      </div>
+
+      <div class="datenav">
+        <button class="icon-btn" id="prevDay" aria-label="Hari sebelumnya">&#8249;</button>
+        <input type="date" id="datePicker" aria-label="Pilih tanggal">
+        <button class="icon-btn" id="nextDay" aria-label="Hari berikutnya">&#8250;</button>
+      </div>
+
+      <div class="search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="searchAbsensi" type="search" placeholder="Cari nama siswa..." autocomplete="off">
+      </div>
+
+      <div id="absensiList"></div>
+      <div class="sticky-save"><button class="btn-primary" id="btnSimpanAbsensi">Simpan Absensi</button></div>
+      <p class="hint">Ketuk H / S / I / A untuk menandai kehadiran setiap siswa</p>
+    </section>
+
+    <section class="screen" id="scr-siswa">
+      <header class="page-head">
+        <button class="icon-btn" data-back aria-label="Kembali">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h2 class="page-title">Data Siswa</h2>
+      </header>
+      <p class="date-line">Kelas 4A &middot; 32 siswa &middot; SDN Grogol Utara 09</p>
+      <div class="search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="searchSiswa" type="search" placeholder="Cari nama siswa..." autocomplete="off">
+      </div>
+      <div id="siswaList"></div>
+    </section>
+
+    <section class="screen" id="scr-nilai">
+      <header class="page-head">
+        <button class="icon-btn" data-back aria-label="Kembali">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h2 class="page-title">Nilai Siswa</h2>
+      </header>
+      <p class="date-line">Kelas 4A &middot; ketuk kolom nilai untuk mengisi</p>
+      <label class="fld-label" for="mapelSelect">Mata pelajaran</label>
+      <select id="mapelSelect" class="select"></select>
+      <p class="small" style="margin:0 0 12px">Rata-rata kelas: <b id="avgLabel">&ndash;</b> &middot; <span class="muted">KKTP 70</span></p>
+      <div id="nilaiList"></div>
+      <div class="sticky-save"><button class="btn-primary" id="btnSimpanNilai">Simpan Nilai</button></div>
+    </section>
+  
+    <section class="screen" id="scr-login">
+      <div class="login-wrap">
+        <div class="login-brand">
+          <div class="login-logo">4A</div>
+          <h1>KelasKu 4A</h1>
+          <p>SDN Grogol Utara 09</p>
+        </div>
+        <div class="login-card" id="loginCard">
+          <div id="loginSetup">
+            <label class="fld-label" for="pinBaru">Buat PIN (6 digit angka)</label>
+            <input class="pin-input" id="pinBaru" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="new-password" aria-label="Buat PIN">
+            <label class="fld-label" for="pinKonfirmasi">Konfirmasi PIN</label>
+            <input class="pin-input" id="pinKonfirmasi" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="new-password" aria-label="Konfirmasi PIN">
+            <p class="login-err" id="setupErr"></p>
+            <button class="btn-primary" id="btnSimpanPin">Simpan PIN</button>
+          </div>
+          <div id="loginMasuk" style="display:none">
+            <label class="fld-label" for="pinMasuk">PIN (6 digit angka)</label>
+            <input class="pin-input" id="pinMasuk" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="current-password" aria-label="PIN">
+            <p class="login-err" id="masukErr"></p>
+            <button class="btn-primary" id="btnMasuk">Masuk</button>
+          </div>
+        </div>
+        <p class="hint">PIN tersimpan hanya di perangkat ini</p>
+      </div>
+    </section>
+
+    <section class="screen" id="scr-lainnya">
+      <header class="page-head">
+        <h2 class="page-title">Lainnya</h2>
+      </header>
+
+      <div class="menu-group">
+        <p class="menu-label">Sinkronisasi Excel</p>
+        <div class="menu-card">
+          <p class="small muted" id="syncInfo" style="margin:0 0 12px">Belum pernah sinkron.</p>
+          <button class="btn-primary" id="btnTarik" style="margin-bottom:10px">Tarik Data Terbaru</button>
+          <div class="btn-row">
+            <button class="btn-secondary" id="btnImpor">Impor Excel</button>
+            <button class="btn-secondary" id="btnEkspor">Ekspor Excel</button>
+          </div>
+          <input type="file" id="fileImpor" accept=".xlsm,.xlsx,.xls" hidden>
+        </div>
+      </div>
+
+      <div class="menu-group">
+        <p class="menu-label">Database</p>
+        <div class="menu-card">
+          <div class="btn-row">
+            <button class="btn-secondary" id="btnBackupDb">Backup Database</button>
+            <button class="btn-secondary" id="btnRestoreDb">Restore</button>
+          </div>
+          <input type="file" id="fileRestoreDb" accept=".sqlite,.db,.json" hidden>
+        </div>
+      </div>
+
+      <div class="menu-group">
+        <p class="menu-label">Aplikasi</p>
+        <button class="menu-row" id="btnTentang">Tentang KelasKu 4A<span class="chev">&#8250;</span></button>
+        <button class="menu-row danger" id="btnLogout">Keluar<span class="chev">&#8250;</span></button>
+      </div>
+      <p class="hint">KelasKu 4A &middot; SDN Grogol Utara 09</p>
+    </section>
+  </main>
+
+  <!-- ============ TAB BAR ============ -->
+  <nav class="tabbar" aria-label="Navigasi utama">
+    <button class="tab active" data-tab="beranda">
+      <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>
+      <span>Beranda</span>
+    </button>
+    <button class="tab" data-tab="absensi">
+      <svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2h2"/><path d="M9 14l2 2 4-4"/></svg>
+      <span>Absensi</span>
+    </button>
+    <button class="tab" data-tab="siswa">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.8"/><path d="M16.2 14.7c2.8.4 4.8 2.4 4.8 5.3"/></svg>
+      <span>Siswa</span>
+    </button>
+    <button class="tab" data-tab="nilai">
+      <svg viewBox="0 0 24 24"><path d="M4 20V11"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M2.5 20h19"/></svg>
+      <span>Nilai</span>
+    </button>
+    <button class="tab" data-tab="lainnya">
+      <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+      <span>Lainnya</span>
     </button>
   </nav>
 
@@ -726,7 +550,6 @@ function jadwalHariIni(){
 const STATUS_ORDER = ["H","S","I","A"];
 const STATUS_LABEL = {H:"Hadir", S:"Sakit", I:"Izin", A:"Alpa"};
 const STATUS_CLASS = {H:"st-h", S:"st-s", I:"st-i", A:"st-a"};
-const AVC = ["#E9E2F8","#FFD9E3","#DCEBFF","#FFF3C9","#DDF6D9","#F0E4FF"];
 const LS_ONB = "kelasku4a_onboarded",
       LS_ATT = "kelasku4a_attendance",
       LS_GRD = "kelasku4a_grades",
@@ -1106,103 +929,70 @@ const db = {
   }
 };
 
-/* ================= MOTION ================= */
+/* ================= MOTION (dipangkas: hanya feedback esensial) ================= */
 const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-let enterAnim = false;
-function countUp(el, target){
-  if(!el || isNaN(target)) return;
-  if(REDUCED){ el.textContent = target; return; }
-  const dur = 450, t0 = performance.now();
-  requestAnimationFrame(function tick(t){
-    const p = Math.min(1, (t - t0) / dur);
-    const e = 1 - Math.pow(1 - p, 3);
-    el.textContent = Math.round(target * e);
-    if(p < 1) requestAnimationFrame(tick);
-  });
-}
-function entrance(screen){
-  if(!screen || REDUCED) return;
-  const items = screen.querySelectorAll(".home-head,.home-title-row,.page-head,.date-line,.big-title,.dash-card,.stat-card,.prog-head,.chart,.datenav,.card,.btn-ghost,.sticky-save,.hint,.search,.fld-label,.select,.login-robot");
-  items.forEach(function(el, i){
-    el.style.setProperty("--i", i);
-    el.classList.remove("anim");
-    void el.offsetWidth;
-    el.classList.add("anim");
-  });
-}
-function moveTabInd(){
-  const bar = document.querySelector(".tabbar");
-  const act = bar ? bar.querySelector(".tab.active") : null;
-  const ind = bar ? bar.querySelector(".tab-ind") : null;
-  if(!act || !ind) return;
-  ind.style.left = act.offsetLeft + "px";
-  ind.style.width = act.offsetWidth + "px";
-}
-window.addEventListener("resize", moveTabInd);
-window.addEventListener("load", moveTabInd);
 
 /* ================= TABS ================= */
-const TAB_ORDER = ["beranda","absensi","siswa","nilai"];
+const TAB_ORDER = ["beranda","absensi","siswa","nilai","lainnya"];
 let lastTab = "beranda";
 async function showTab(name, dir){
-  if(!dir) dir = TAB_ORDER.indexOf(name) >= TAB_ORDER.indexOf(lastTab) ? "fwd" : "back";
   lastTab = name;
-  const bar = document.querySelector(".tabbar");
-  if(bar) bar.style.display = "";
+  document.querySelectorAll(".tabbar,.sidebar").forEach(el => { el.style.display = ""; });
   document.querySelectorAll(".tab").forEach(t =>
     t.classList.toggle("active", t.dataset.tab === name));
-  moveTabInd();
   document.querySelectorAll(".screen").forEach(s => {
-    const on = s.id === "scr-"+name;
-    s.classList.toggle("active", on);
-    if(on) s.dataset.dir = dir;
+    s.classList.toggle("active", s.id === "scr-"+name);
   });
   window.scrollTo(0,0);
-  enterAnim = true;
   if(name === "beranda") await renderBeranda();
   if(name === "absensi") await renderAbsensi();
   if(name === "siswa") renderSiswa();
   if(name === "nilai") await renderNilai();
-  entrance(document.getElementById("scr-"+name));
-  enterAnim = false;
 }
 
 /* ================= BERANDA ================= */
-function renderDcAvatars(){
-  const cols = ["#8B7CF6","#F6A9C0","#5B87D6","#F2B84B"];
-  let h = "";
-  for(let i=0;i<3;i++){
-    h += '<span class="av" style="background:'+cols[i%cols.length]+'">'+initials(STUDENTS[i])+"</span>";
-  }
-  h += '<span class="av more">+29</span>';
-  $("#dcAvatars").innerHTML = h;
-}
 async function renderBeranda(){
   const today = isoOf(jakartaDate());
   $("#berandaDate").textContent = fmtLong(today);
+  $("#heroCount").textContent = STUDENTS.length + " siswa";
   const rec = (await db.getAllAbsensi())[today] || null;
-  let h=0, s=0, i=0;
+  let h=0, s=0, i=0, a=0;
   if(rec) Object.keys(rec).forEach(k => {
-    if(rec[k]==="H") h++; else if(rec[k]==="S") s++; else if(rec[k]==="I") i++;
+    if(rec[k]==="H") h++; else if(rec[k]==="S") s++;
+    else if(rec[k]==="I") i++; else if(rec[k]==="A") a++;
   });
   const total = STUDENTS.length;
-  const pct = rec ? Math.round(h/total*100) : 0;
-  $("#miniPct").style.width = pct+"%";
-  $("#dcHadirPct").textContent = pct+"%";
-  $("#dcHadirLine").textContent = rec ? h+"/"+total+" hadir" : "Belum diisi hari ini";
-  const grd = (await db.getNilai())[curMapel] || {};
-  const vals = STUDENTS.map(n => grd[n]).filter(v => typeof v === "number");
-  const avg = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : "–";
-  $("#dcNilaiLine").textContent = curMapel+" \u00B7 "+avg;
+  $("#todayHadir").textContent = h;
+  $("#todaySakit").textContent = s;
+  $("#todayIzin").textContent = i;
+  $("#todayAlpa").textContent = a;
+  $("#todayLine").textContent = rec
+    ? h + "/" + total + " siswa hadir hari ini"
+    : "Absensi hari ini belum diisi";
+  // Jadwal hari ini (timeline)
   const jw = jadwalHariIni();
-  $("#dcJadwalLine").textContent = jw.list ? jw.list.length+" JP · "+jw.nama : "Libur · "+jw.nama;
-  document.querySelector("#jadwalCard .card-title").textContent = "Jadwal · "+jw.nama;
+  $("#jadwalTitle").textContent = "Jadwal · " + jw.nama;
   $("#jadwalList").innerHTML = jw.list
-    ? jw.list.map((m,k) =>
-      '<div class="jadwal'+(enterAnim?' anim':'')+'" style="--i:'+k+'"><span class="time">'+(k+1)+'</span>'+
-      '<span class="mapel">'+m+'</span></div>').join("")
-    : '<p class="small muted" style="padding:10px 0">Hari libur, selamat istirahat!</p>';
-  await updateSyncInfo();
+    ? jw.list.map((m,k) => {
+        const rest = /istirahat/i.test(m);
+        return '<div class="tl-item'+(rest?' rest':'')+'">'+
+          '<div class="tl-time">Jam ke-'+(k+1)+'</div>'+
+          '<div class="tl-mapel">'+m+'</div></div>';
+      }).join("")
+    : '<p class="small muted" style="margin:0">Hari libur, selamat istirahat.</p>';
+  // Aktivitas terbaru: 3 tanggal terakhir yang ada datanya
+  const att = await db.getAllAbsensi();
+  const dates = Object.keys(att).sort().reverse().slice(0,3);
+  $("#aktivitasList").innerHTML = dates.length ? dates.map(iso => {
+    const r = att[iso] || {};
+    const hh = Object.keys(r).filter(k => r[k]==="H").length;
+    const nh = Object.keys(r).filter(k => r[k]!=="H").length;
+    const nonH = Object.keys(r).filter(k => r[k]!=="H")
+      .map(k => k.split(" ")[0] + " (" + STATUS_LABEL[r[k]] + ")").join(", ");
+    return '<div class="act-item"><span class="d">' + fmtShort(iso) + '</span> &middot; ' +
+      hh + ' hadir' + (nh ? ', ' + nh + ' tidak hadir' : '') +
+      (nonH ? '<br><span class="m">' + nonH + '</span>' : '') + '</div>';
+  }).join("") : '<div class="act-item"><span class="m">Belum ada aktivitas tercatat.</span></div>';
 }
 
 /* ================= ABSENSI ================= */
@@ -1216,45 +1006,30 @@ async function loadDraft(){
 function hadirCount(rec){
   return Object.keys(rec).filter(k => rec[k]==="H").length;
 }
-async function renderBars(){
-  const days = [shiftISO(selDate,-2), shiftISO(selDate,-1), selDate];
-  const att = await db.getAllAbsensi();
-  const data = days.map(d => {
-    let cnt;
-    if(d === selDate){ cnt = hadirCount(draft); }
-    else { const r = att[d]; cnt = r ? hadirCount(r) : 0; }
-    return {d:d, cnt:cnt};
-  });
-  const max = Math.max(1, Math.max.apply(null, data.map(x => x.cnt)));
-  $("#bars3").innerHTML = data.map((x,k) => {
-    const d = parseISO(x.d);
-    const lbl = d.getDate()+" "+BULAN[d.getMonth()].slice(0,3);
-    const hgt = 52 + Math.round(x.cnt/max*108);
-    return '<div class="bar-col"><div class="pill'+(enterAnim?' bar-grow':'')+'" style="height:'+hgt+'px;--i:'+k+'">'+
-      "<b>"+x.cnt+"</b><span>hadir</span></div>"+
-      '<div class="bar-lbl">'+lbl+"</div></div>";
-  }).join("");
-}
+let absensiQuery = "";
 async function renderAbsensi(){
   $("#absensiDateLabel").textContent = fmtLong(selDate);
   const dp = $("#datePicker");
   if(dp.value !== selDate) dp.value = selDate;
   const c = {H:0,S:0,I:0,A:0};
   Object.keys(draft).forEach(k => { if(c[draft[k]] !== undefined) c[draft[k]]++; });
-  if(enterAnim){ countUp($("#statHadir"), c.H); countUp($("#statSakit"), c.S); }
-  else { $("#statHadir").textContent = c.H; $("#statSakit").textContent = c.S; }
-  $("#absensiSummary").innerHTML =
-    "<b>"+c.H+" Hadir</b> &bull; <b>"+c.S+" Sakit</b> &bull; "+
-    "<b>"+c.I+" Izin</b> &bull; <b>"+c.A+" Alpa</b>";
-  await renderBars();
-  $("#absensiList").innerHTML = STUDENTS.map((n, idx) => {
-    const st = draft[n];
-    return '<div class="row'+(enterAnim?' anim':'')+'" style="--i:'+idx+'" data-i="'+idx+'">'+
-      '<div class="avatar" style="background:'+AVC[idx%AVC.length]+'">'+initials(n)+'</div>'+
-      '<div class="row-main"><div class="row-name">'+n+'</div>'+
-      '<div class="row-sub">No. absen '+(idx+1)+'</div></div>'+
-      '<span class="badge '+STATUS_CLASS[st]+'">'+STATUS_LABEL[st]+'</span></div>';
-  }).join("");
+  $("#statHadir").textContent = c.H;
+  $("#statSakit").textContent = c.S;
+  $("#statIzin").textContent = c.I;
+  $("#statAlpa").textContent = c.A;
+  const q = absensiQuery.toLowerCase().trim();
+  const list = STUDENTS.map((n,idx) => ({n:n, idx:idx}))
+    .filter(o => o.n.toLowerCase().indexOf(q) !== -1);
+  $("#absensiList").innerHTML = list.length ? list.map(o => {
+    const st = draft[o.n];
+    const seg = STATUS_ORDER.map(code =>
+      '<button data-st="'+code+'" class="'+(st===code?'on':'')+'" aria-label="'+STATUS_LABEL[code]+'">'+code+'</button>'
+    ).join("");
+    return '<div class="row" data-i="'+o.idx+'">'+
+      '<div class="row-main"><div class="row-name">'+o.n+'</div>'+
+      '<div class="row-sub">No. absen '+(o.idx+1)+'</div></div>'+
+      '<div class="seg" role="group" aria-label="Status '+o.n+'">'+seg+'</div></div>';
+  }).join("") : '<p class="muted center">Siswa tidak ditemukan</p>';
 }
 
 /* ================= SISWA ================= */
@@ -1262,9 +1037,9 @@ function renderSiswa(){
   const q = ($("#searchSiswa").value || "").toLowerCase().trim();
   const list = STUDENTS.map((n,i) => ({n:n, i:i}))
                        .filter(o => o.n.toLowerCase().indexOf(q) !== -1);
-  $("#siswaList").innerHTML = list.length ? list.map((o,k) =>
-    '<div class="row'+(enterAnim?' anim':'')+'" style="--i:'+k+'" data-i="'+o.i+'">'+
-    '<div class="avatar" style="background:'+AVC[o.i%AVC.length]+'">'+initials(o.n)+'</div>'+
+  $("#siswaList").innerHTML = list.length ? list.map(o =>
+    '<div class="row" data-i="'+o.i+'">'+
+    '<div class="avatar">'+initials(o.n)+'</div>'+
     '<div class="row-main"><div class="row-name">'+o.n+'</div>'+
     '<div class="row-sub">No. absen '+(o.i+1)+'</div></div>'+
     '<span class="chev">&#8250;</span></div>').join("")
@@ -1278,20 +1053,19 @@ async function openSiswaDetail(idx){
   Object.keys(att).forEach(k => {
     if(k.indexOf(prefix) === 0 && att[k][n] && c[att[k][n]] !== undefined) c[att[k][n]]++;
   });
-  const chip = (lbl,val,bg) =>
-    '<div class="mini" style="background:'+bg+'"><div class="n">'+val+'</div>'+
+  const chip = (lbl,val) =>
+    '<div class="mini"><div class="n">'+val+'</div>'+
     '<div class="l">'+lbl+'</div></div>';
   openSheet(
     '<button class="sheet-x" onclick="closeSheet()" aria-label="Tutup">&times;</button>'+
     '<div class="sheet-head">'+
-      '<div class="avatar big" style="background:'+AVC[idx%AVC.length]+'">'+initials(n)+'</div>'+
       '<h3>'+n+'</h3>'+
       '<p class="muted small" style="margin:0">No. absen '+(idx+1)+' &bull; Kelas 4A</p>'+
     '</div>'+
     '<p class="fld-label">Ringkasan kehadiran bulan ini</p>'+
     '<div class="ministats">'+
-      chip("Hadir",c.H,"#DDF6D9")+chip("Sakit",c.S,"#FFF3C9")+
-      chip("Izin",c.I,"#DCEBFF")+chip("Alpa",c.A,"#FFE0E6")+
+      chip("Hadir",c.H)+chip("Sakit",c.S)+
+      chip("Izin",c.I)+chip("Alpa",c.A)+
     '</div>'
   );
 }
@@ -1311,18 +1085,18 @@ async function renderNilai(){
   const rec = (await db.getNilai())[curMapel] || {};
   const vals = STUDENTS.map(n => rec[n]).filter(v => typeof v === "number");
   const avg = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
-  if(enterAnim && avg !== null) countUp($("#avgLabel"), avg);
-  else $("#avgLabel").textContent = avg === null ? "–" : avg;
-  $("#nilaiList").innerHTML = STUDENTS.map((n, idx) => {
+  $("#avgLabel").textContent = avg === null ? "\u2013" : avg;
+  $("#nilaiList").innerHTML = STUDENTS.length ? STUDENTS.map((n, idx) => {
     const v = rec[n];
-    return '<div class="row'+(enterAnim?' anim':'')+'" style="cursor:default;--i:'+idx+'">'+
-      '<div class="avatar" style="background:'+AVC[idx%AVC.length]+'">'+initials(n)+'</div>'+
+    const dot = typeof v !== "number" ? "" : (v >= 70 ? " good" : " warn");
+    return '<div class="row" style="cursor:default">'+
       '<div class="row-main"><div class="row-name">'+n+'</div>'+
       '<div class="row-sub">No. absen '+(idx+1)+'</div></div>'+
+      '<span class="dot'+dot+'"></span>'+
       '<input class="score" type="number" min="0" max="100" data-n="'+n+'" '+
-        'value="'+(typeof v==="number"?v:"")+'" placeholder="0–100" aria-label="Nilai '+n+'">'+
+        'value="'+(typeof v==="number"?v:"")+'" placeholder="0\u2013100" aria-label="Nilai '+n+'">'+
       '</div>';
-  }).join("");
+  }).join("") : '<p class="muted center">Belum ada data nilai untuk mata pelajaran ini.</p>';
 }
 
 /* ================= EVENTS ================= */
@@ -1334,7 +1108,6 @@ async function dismissOnboarding(){
   showLogin();
 }
 $("#btnMulai").addEventListener("click", dismissOnboarding);
-$("#btnMulai2").addEventListener("click", dismissOnboarding);
 document.querySelectorAll("[data-go]").forEach(c =>
   c.addEventListener("click", () => {
     const t = c.dataset.go;
@@ -1347,7 +1120,10 @@ document.querySelectorAll("[data-go]").forEach(c =>
   }));
 document.querySelectorAll("[data-back]").forEach(b =>
   b.addEventListener("click", () => showTab("beranda", "back")));
-$("#btnBell").addEventListener("click", () => toast("Belum ada notifikasi baru"));
+const bp = $("#btnProfil");
+if(bp) bp.addEventListener("click", () => showTab("lainnya", "fwd"));
+const bt = $("#btnTentang");
+if(bt) bt.addEventListener("click", () => toast("KelasKu 4A \u2014 aplikasi pendamping wali kelas 4A, SDN Grogol Utara 09"));
 $("#btnSimpanPin").addEventListener("click", doSimpanPin);
 $("#btnMasuk").addEventListener("click", doMasuk);
 [["pinBaru","pin"],["pinKonfirmasi","pin"],["pinMasuk","masuk"]].forEach(([id]) => {
@@ -1364,12 +1140,6 @@ $("#btnLogout").addEventListener("click", async () => {
     showLogin();
   }
 });
-$("#btnAbsMenu").addEventListener("click", () => toast("Absensi tersimpan otomatis per tanggal"));
-$("#btnProgMenu").addEventListener("click", () => toast("Grafik 3 hari terakhir"));
-$("#btnGoSearch").addEventListener("click", () => {
-  showTab("siswa");
-  setTimeout(() => { const s = $("#searchSiswa"); if(s) s.focus(); }, 350);
-});
 $("#prevDay").addEventListener("click", async () => {
   selDate = shiftISO(selDate, -1); await loadDraft(); await renderAbsensi();
 });
@@ -1380,17 +1150,26 @@ $("#datePicker").addEventListener("change", async e => {
   if(e.target.value){ selDate = e.target.value; await loadDraft(); await renderAbsensi(); }
 });
 $("#absensiList").addEventListener("click", e => {
-  const row = e.target.closest(".row");
+  const btn = e.target.closest("[data-st]");
+  if(!btn) return;
+  const row = btn.closest(".row");
   if(!row) return;
-  const idx = +row.dataset.i;
-  const n = STUDENTS[idx];
-  draft[n] = STATUS_ORDER[(STATUS_ORDER.indexOf(draft[n])+1) % STATUS_ORDER.length];
-  renderAbsensi();
-  const badge = document.querySelector('#absensiList .row[data-i="'+idx+'"] .badge');
-  if(badge){ badge.classList.remove("pop"); void badge.offsetWidth; badge.classList.add("pop"); }
+  const n = STUDENTS[+row.dataset.i];
+  draft[n] = btn.dataset.st;
+  row.querySelectorAll("[data-st]").forEach(b =>
+    b.classList.toggle("on", b.dataset.st === draft[n]));
+  renderAbsensiCounts();
 });
-$("#btnAllHadir").addEventListener("click", () => {
-  STUDENTS.forEach(n => draft[n] = "H");
+function renderAbsensiCounts(){
+  const c = {H:0,S:0,I:0,A:0};
+  Object.keys(draft).forEach(k => { if(c[draft[k]] !== undefined) c[draft[k]]++; });
+  $("#statHadir").textContent = c.H;
+  $("#statSakit").textContent = c.S;
+  $("#statIzin").textContent = c.I;
+  $("#statAlpa").textContent = c.A;
+}
+$("#searchAbsensi").addEventListener("input", e => {
+  absensiQuery = e.target.value || "";
   renderAbsensi();
 });
 $("#btnSimpanAbsensi").addEventListener("click", async () => {
@@ -1448,8 +1227,7 @@ function shakeCard(){
 }
 async function showLogin(){
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  const bar = document.querySelector(".tabbar");
-  if(bar) bar.style.display = "none";
+  document.querySelectorAll(".tabbar,.sidebar").forEach(el => { el.style.display = "none"; });
   document.querySelectorAll(".screen").forEach(s => {
     const on = s.id === "scr-login";
     s.classList.toggle("active", on);
@@ -1465,7 +1243,6 @@ async function showLogin(){
   });
   $("#setupErr").textContent = "";
   $("#masukErr").textContent = "";
-  entrance($("#scr-login"));
 }
 async function doSimpanPin(){
   const p1 = $("#pinBaru").value.trim(), p2 = $("#pinKonfirmasi").value.trim();
@@ -1703,7 +1480,6 @@ $("#fileRestoreDb").addEventListener("change", async e => {
 /* ================= INIT ================= */
 (async function init(){
   await db.init();
-  renderDcAvatars();
   await loadDraft();
 $("#btnImpor").addEventListener("click", onImporClick);
 $("#fileImpor").addEventListener("change", onFileImpor);
