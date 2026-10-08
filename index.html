@@ -94,6 +94,15 @@ body{
 .tl-item.rest::before{background:#C9C6BC}
 .tl-time{font-size:12px;color:var(--muted);font-weight:600}
 .tl-mapel{font-size:15px;font-weight:700;margin-top:1px}
+/* ---------- week strip (jadwal) ---------- */
+.week-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px}
+.week-day{border:1px solid var(--border);background:var(--surface);border-radius:10px;
+  padding:8px 0 7px;cursor:pointer;font-family:inherit;text-align:center;position:relative;color:var(--text)}
+.week-day .wd{font-size:11px;font-weight:600;color:var(--muted)}
+.week-day.active{background:var(--primary);border-color:var(--primary)}
+.week-day.active .wd{color:#fff}
+.week-day .today-dot{position:absolute;top:5px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--primary)}
+.week-day.active .today-dot{background:#fff}
 
 /* ---------- rows ---------- */
 .pantau-row{cursor:pointer}
@@ -598,6 +607,19 @@ select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xm
       <p class="date-line" id="pantauDetailSub"></p>
       <div id="pantauDetailBody"></div>
     </section>
+
+    <section class="screen" id="scr-jadwal">
+      <header class="page-head">
+        <button class="icon-btn" id="btnJadwalBack" aria-label="Kembali">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h2 class="page-title">Jadwal Pelajaran</h2>
+      </header>
+      <p class="date-line">Kelas 4A &middot; TP 2026/2027</p>
+      <div class="week-strip" id="weekStrip" role="group" aria-label="Pilih hari"></div>
+      <p class="menu-label" id="jadwalDayTitle" style="margin:4px 0 8px"></p>
+      <div class="tl" id="jadwalFullList"></div>
+    </section>
   </main>
 
   <!-- ============ TAB BAR ============ -->
@@ -664,6 +686,34 @@ const NAMA_HARI = {0:"Minggu",1:"Senin",2:"Selasa",3:"Rabu",4:"Kamis",5:"Jumat",
 function jadwalHariIni(){
   const d = jakartaDate().getDay();
   return {nama:NAMA_HARI[d], list:JADWAL_HARI[d] || null};
+}
+/* ================= JADWAL (tampilan penuh) ================= */
+const HARI_SINGKAT = {1:"Sen",2:"Sel",3:"Rab",4:"Kam",5:"Jum",6:"Sab",0:"Min"};
+const URUT_HARI = [1,2,3,4,5,6,0]; /* Senin..Minggu */
+let _jadwalHari = -1; /* -1 = ikut hari ini */
+function renderJadwal(){
+  const hariIni = jakartaDate().getDay();
+  if(_jadwalHari < 0) _jadwalHari = hariIni;
+  const strip = $("#weekStrip");
+  strip.innerHTML = URUT_HARI.map(h =>
+    '<button class="week-day'+(h===_jadwalHari?' active':'')+'" data-hari="'+h+'" aria-label="'+NAMA_HARI[h]+'">'+
+    (h===hariIni?'<span class="today-dot"></span>':"")+
+    '<span class="wd">'+HARI_SINGKAT[h]+'</span></button>'
+  ).join("");
+  strip.querySelectorAll(".week-day").forEach(b =>
+    b.addEventListener("click", () => { _jadwalHari = +b.dataset.hari; renderJadwal(); }));
+  const list = JADWAL_HARI[_jadwalHari] || null;
+  $("#jadwalDayTitle").textContent = NAMA_HARI[_jadwalHari] +
+    (_jadwalHari===hariIni ? " · hari ini" : "") +
+    (list ? " · " + list.length + " JP" : "");
+  $("#jadwalFullList").innerHTML = list
+    ? list.map((m,k) => {
+        const rest = /istirahat/i.test(m);
+        return '<div class="tl-item'+(rest?' rest':'')+'">'+
+          '<div class="tl-time">Jam ke-'+(k+1)+'</div>'+
+          '<div class="tl-mapel">'+m+'</div></div>';
+      }).join("")
+    : '<p class="small muted" style="margin:0">Hari libur, selamat istirahat.</p>';
 }
 const STATUS_ORDER = ["H","S","I","A"];
 const STATUS_LABEL = {H:"Hadir", S:"Sakit", I:"Izin", A:"Alpa"};
@@ -1119,6 +1169,7 @@ async function showTab(name, dir){
   if(name === "pemantauan") await renderPemantauan();
   if(name === "pantau-detail") await renderPantauDetail(_pantauDetailNama);
   if(name === "rekap") await renderRekap();
+  if(name === "jadwal"){ _jadwalHari = -1; await renderJadwal(); }
   if(name === "lainnya") await updatePantauBadge();
 }
 
@@ -1549,13 +1600,7 @@ async function dismissOnboarding(){
 $("#btnMulai").addEventListener("click", dismissOnboarding);
 document.querySelectorAll("[data-go]").forEach(c =>
   c.addEventListener("click", () => {
-    const t = c.dataset.go;
-    if(t === "jadwal"){
-      const el = $("#jadwalCard");
-      if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
-      return;
-    }
-    showTab(t, "fwd");
+    showTab(c.dataset.go, "fwd");
   }));
 document.querySelectorAll("[data-back]").forEach(b =>
   b.addEventListener("click", () => showTab("beranda", "back")));
@@ -1565,6 +1610,7 @@ if(bp) bp.addEventListener("click", () => showTab("lainnya", "fwd"));
 $("#btnPemantauan").addEventListener("click", () => showTab("pemantauan", "fwd"));
 $("#btnPantauBack").addEventListener("click", () => showTab("lainnya", "back"));
 $("#btnPantauDetailBack").addEventListener("click", () => showTab("pemantauan", "back"));
+$("#btnJadwalBack").addEventListener("click", () => showTab("beranda", "back"));
 /* ---- Rekap Bulanan ---- */
 $("#btnRekap").addEventListener("click", () => showTab("rekap", "fwd"));
 $("#btnRekapBack").addEventListener("click", () => showTab("absensi", "back"));
