@@ -96,6 +96,7 @@ body{
 .tl-mapel{font-size:15px;font-weight:700;margin-top:1px}
 
 /* ---------- rows ---------- */
+.pantau-row{cursor:pointer}
 .row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);
   border-radius:10px;padding:12px 14px;margin-bottom:8px}
 .row-main{flex:1;min-width:0}
@@ -557,6 +558,17 @@ select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xm
         </div>
         <div id="pantauTambahList" style="margin-top:8px"></div>
       </div>
+    </section>
+
+    <section class="screen" id="scr-pantau-detail">
+      <header class="page-head">
+        <button class="icon-btn" id="btnPantauDetailBack" aria-label="Kembali">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h2 class="page-title" id="pantauDetailNama">Detail</h2>
+      </header>
+      <p class="date-line" id="pantauDetailSub"></p>
+      <div id="pantauDetailBody"></div>
     </section>
   </main>
 
@@ -1077,6 +1089,7 @@ async function showTab(name, dir){
   if(name === "siswa") renderSiswa();
   if(name === "nilai") await renderNilai();
   if(name === "pemantauan") await renderPemantauan();
+  if(name === "pantau-detail") await renderPantauDetail(_pantauDetailNama);
   if(name === "lainnya") await updatePantauBadge();
 }
 
@@ -1342,6 +1355,47 @@ async function salinTeks(teks){
   }
 }
 
+/* Keterangan sakit pada tanggal persis; "" bila tidak ada. */
+function keteranganPadaTanggal(nama, tanggalISO){
+  const key = (nama || "").trim().toLowerCase();
+  if(!key || !Array.isArray(_pantauCatatan)) return "";
+  let out = "";
+  _pantauCatatan.forEach(e => {
+    if(!e || typeof e !== "object") return;
+    if((e.nama || "").trim().toLowerCase() !== key) return;
+    if(e.tanggal !== tanggalISO) return;
+    const k = String(e.keterangan || "").trim();
+    if(k) out = k;
+  });
+  return out;
+}
+async function renderPantauDetail(nama){
+  const att = await db.getAllAbsensi();
+  const today = isoOf(jakartaDate());
+  const range = await getPantauRange();
+  $("#pantauDetailNama").textContent = nama;
+  $("#pantauDetailSub").textContent = rentangLabel(range.dari, range.sampai, today);
+  const st = pantauStatsRange(nama, att, range.dari, range.sampai);
+  const body = $("#pantauDetailBody");
+  const badgeS = '<span class="badge" style="background:#F3E2E2;color:var(--danger)">Sakit</span>';
+  const badgeI = '<span class="badge st-i">Izin</span>';
+  const badgeA = '<span class="badge" style="background:#F1EAD9;color:#8A6D1B">Alpa</span>';
+  const buat = (tglList, badge) => {
+    if(!tglList.length) return "";
+    const items = tglList.slice().reverse().map(t => {
+      const ket = keteranganPadaTanggal(nama, t);
+      return '<div class="row"><div class="row-main"><div class="row-name" style="font-size:13.5px">'+fmtLong(t)+'</div>'+
+        (ket ? '<div class="row-sub">'+esc(ket)+'</div>' : "")+'</div>'+badge+'</div>';
+    }).join("");
+    return items;
+  };
+  const htmlS = buat(st.tglS, badgeS), htmlI = buat(st.tglI, badgeI), htmlA = buat(st.tglA, badgeA);
+  const html =
+    (htmlS ? '<p class="menu-label" style="margin:4px 0 8px">Sakit ('+st.tglS.length+' hari)</p>'+htmlS : "") +
+    (htmlI ? '<p class="menu-label" style="margin:14px 0 8px">Izin ('+st.tglI.length+' hari)</p>'+htmlI : "") +
+    (htmlA ? '<p class="menu-label" style="margin:14px 0 8px">Alpa ('+st.tglA.length+' hari)</p>'+htmlA : "");
+  body.innerHTML = html || '<p class="muted center">Tidak ada riwayat dalam rentang ini.</p>';
+}
 async function updatePantauBadge(){
   const list = await db.getPemantauan();
   const el = $("#pantauBadge");
@@ -1355,6 +1409,7 @@ async function updatePantauBadge(){
 let _pantauPick = [];
 let _pantauCatatan = [];   /* [{tanggal, nama, keterangan}] dari data.json */
 let _pantauFilter = "semua"; /* "semua" | "sakit" */
+let _pantauDetailNama = "";
 let _pantauSickRows = [];    /* [{nama, ket}] untuk tombol salin */
 async function renderPantauPicker(){
   const q = ($("#searchPantau").value || "").toLowerCase().trim();
@@ -1412,7 +1467,7 @@ async function renderPemantauan(){
       ? '<div class="row-sub">'+esc(ket)+'</div><div class="row-sub muted">'+esc(subTgl)+'</div>'
       : '<div class="row-sub">'+esc(subTgl)+'</div>';
     return {s: st.S, html:
-      '<div class="row"><div class="avatar">'+initials(nama)+'</div>'+
+      '<div class="row pantau-row" data-nama="'+nama.replace(/"/g,"&quot;")+'"><div class="avatar">'+initials(nama)+'</div>'+
       '<div class="row-main"><div class="row-name">'+nama+'</div>'+
       subHtml+'</div>'+
       badge+
@@ -1435,12 +1490,19 @@ async function renderPemantauan(){
       ? '<p class="muted center">Tidak ada siswa sakit dalam rentang ini.</p>'
       : '<p class="muted center">Belum ada siswa dalam pemantauan.</p>');
   document.querySelectorAll(".pantau-del").forEach(b =>
-    b.addEventListener("click", async () => {
+    b.addEventListener("click", async (e) => {
+      e.stopPropagation();
       const nama = b.dataset.nama;
       if(confirm("Hapus "+nama+" dari daftar pemantauan?")){
         await db.delPemantauan(nama);
         await renderPemantauan();
       }
+    }));
+  /* Klik baris -> halaman detail riwayat */
+  document.querySelectorAll(".pantau-row").forEach(r =>
+    r.addEventListener("click", () => {
+      _pantauDetailNama = r.dataset.nama;
+      showTab("pantau-detail");
     }));
   await updatePantauBadge();
   const pk = $("#pantauPicker");
@@ -1473,6 +1535,7 @@ if(bp) bp.addEventListener("click", () => showTab("lainnya", "fwd"));
 /* ---- Pemantauan ---- */
 $("#btnPemantauan").addEventListener("click", () => showTab("pemantauan", "fwd"));
 $("#btnPantauBack").addEventListener("click", () => showTab("lainnya", "back"));
+$("#btnPantauDetailBack").addEventListener("click", () => showTab("pemantauan", "back"));
 $("#pantauWarn").addEventListener("click", () => showTab("pemantauan", "fwd"));
 $("#btnTambahPantau").addEventListener("click", async () => {
   const p = $("#pantauPicker");
