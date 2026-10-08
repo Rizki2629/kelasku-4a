@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#8B7CF6">
+<title>KelasKu 4A — Manajemen Kelas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+<style>
+:root{
+  --mint:#D9F0E5; --lav:#E7DFF8; --yellow:#FCE9A6; --peach:#FBDCC3;
+  --accent:#8B7CF6; --accent-dark:#6F5FE0;
+  --ink:#2E2A33; --gray:#9A9AA3;
+  --cream:#FFFBF2; --card:#FFFFFF;
+  --green-bg:#DDF6D9; --green-tx:#2F7D33;
+  --blue-bg:#DCEBFF; --blue-tx:#2B5CB8;
+  --red-bg:#FFE0E6; --red-tx:#C2255C;
+  --yellow-bg:#FFF3C9; --yellow-tx:#8A5A00;
+  --shadow:0 10px 26px rgba(90,70,160,.10);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  background:linear-gradient(160deg,#E7DCF8,#D9CCF1);color:var(--ink);
+  display:flex;justify-content:center;min-height:100dvh;
+}
+.phone{
+  width:100%;max-width:480px;min-height:100dvh;background:var(--cream);
+  position:relative;overflow:hidden;padding-bottom:118px;
+}
+
+/* ---------- screens ---------- */
+.screen{display:none;padding:20px 18px 8px}
+.screen.active{display:block}
+.screen.active[data-dir="fwd"]{animation:slideR .32s cubic-bezier(.22,.8,.36,1)}
+.screen.active[data-dir="back"]{animation:slideL .32s cubic-bezier(.22,.8,.36,1)}
+@keyframes slideR{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+@keyframes slideL{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:none}}
+
+/* ---------- motion system ---------- */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.anim{animation:fadeUp .38s cubic-bezier(.22,.8,.36,1) backwards;animation-delay:calc(var(--i,0)*60ms)}
+@keyframes growY{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.bar-grow{transform-origin:bottom center;animation:growY .5s cubic-bezier(.22,.8,.36,1) backwards;animation-delay:calc(var(--i,0)*90ms)}
+@keyframes pop{0%{transform:scale(.55)}55%{transform:scale(1.18)}100%{transform:scale(1)}}
+.badge.pop{animation:pop .32s cubic-bezier(.22,.8,.36,1)}
+/* press feedback (smooth, transform-only) */
+.btn-pill,.btn-ghost,.btn-circle,.icon-circle,.iconbtn,.dash-card,.row,.tab{transition:transform .14s ease-out}
+.tab{transition:transform .14s ease-out,color .25s ease}
+.btn-pill:active,.btn-ghost:active,.btn-circle:active,.icon-circle:active,.iconbtn:active{transform:scale(.95)}
+.tab:active{transform:scale(.96)}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+/* ---------- headers ---------- */
+.home-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.home-user{display:flex;align-items:center;gap:12px}
+.hello{font-size:15px;font-weight:800;margin:0}
+.mini-progress{width:76px;height:7px;background:#ECE5FA;border-radius:99px;margin-top:7px;overflow:hidden}
+.mini-progress>div{height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .5s ease}
+.icon-circle{width:46px;height:46px;border-radius:50%;border:0;background:#fff;
+  box-shadow:0 8px 20px rgba(90,70,160,.12);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0}
+.icon-circle:active{transform:scale(.94)}
+.icon-circle svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.home-title-row{display:flex;justify-content:space-between;align-items:flex-start;margin:4px 0 2px}
+.big-title{font-size:31px;font-weight:900;line-height:1.16;margin:0;letter-spacing:-.4px}
+.date-line{font-size:13px;font-weight:700;color:var(--gray);margin:8px 0 16px}
+.page-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+
+/* ---------- dashboard cards (beranda) ---------- */
+.dash-card{border-radius:28px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow);cursor:pointer}
+.dash-card:active{transform:scale(.99)}
+.dash-card.mint{background:var(--mint)}
+.dash-card.lav{background:var(--lav)}
+.dash-card.peach{background:var(--peach)}
+.dc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.dc-icon{width:48px;height:48px;border-radius:17px;background:#fff;display:flex;align-items:center;
+  justify-content:center;box-shadow:0 4px 10px rgba(60,40,120,.08)}
+.dc-icon svg{width:24px;height:24px;stroke:var(--ink);fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.dc-rating{display:flex;align-items:center;gap:5px;font-size:13.5px;font-weight:800;color:#6E6A77}
+.dc-rating svg{width:16px;height:16px;fill:#F2B84B}
+.dc-label{font-size:12.5px;font-weight:700;color:#6E6A77;margin:0 0 5px}
+.dc-title{font-size:22px;font-weight:900;line-height:1.22;margin:0}
+.dc-line{font-size:13.5px;font-weight:800;color:#4c4a55;margin:8px 0 0}
+.dc-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+.dc-avatars{display:flex;align-items:center}
+.av{width:36px;height:36px;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;
+  justify-content:center;font-size:11px;font-weight:900;color:#fff;margin-left:-11px;
+  box-shadow:0 3px 8px rgba(60,40,120,.12)}
+.av:first-child{margin-left:0}
+.av.more{background:#fff;color:#6E6A77;font-size:10.5px}
+.dc-arrow{width:46px;height:46px;border-radius:50%;background:#fff;display:flex;align-items:center;
+  justify-content:center;box-shadow:0 6px 14px rgba(60,40,120,.12)}
+.dc-arrow svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:2.4;
+  stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- generic card ---------- */
+.card{background:var(--card);border-radius:26px;box-shadow:var(--shadow);padding:18px;margin-bottom:14px}
+.card-title{font-size:15px;font-weight:900;margin-bottom:6px}
+.muted{color:var(--gray)}
+.small{font-size:12.5px}
+.center{text-align:center}
+.hint{font-size:12.5px;color:var(--gray);text-align:center;font-weight:700;margin:14px 4px 0}
+
+/* ---------- jadwal ---------- */
+.jadwal{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px dashed #EDE7F7}
+.jadwal:last-child{border-bottom:0}
+.jadwal .time{background:var(--lav);color:var(--accent-dark);font-weight:800;font-size:12px;
+  padding:6px 10px;border-radius:999px;flex-shrink:0;min-width:52px;text-align:center}
+.jadwal .mapel{font-weight:800;font-size:14px}
+
+/* ---------- stat cards (absensi / nilai) ---------- */
+.stat2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.stat-card{border-radius:26px;padding:16px;box-shadow:var(--shadow)}
+.stat-card.mint{background:var(--mint)}
+.stat-card.yel{background:var(--yellow)}
+.stat-card.lav{background:var(--lav)}
+.sc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sc-ico{width:44px;height:44px;border-radius:50%;background:#fff;display:flex;align-items:center;
+  justify-content:center;box-shadow:0 4px 10px rgba(60,40,120,.08)}
+.sc-ico svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:2.2;
+  stroke-linecap:round;stroke-linejoin:round}
+.sc-arrow{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.65);
+  display:flex;align-items:center;justify-content:center}
+.sc-arrow svg{width:16px;height:16px;stroke:var(--ink);fill:none;stroke-width:2.4;
+  stroke-linecap:round;stroke-linejoin:round}
+.sc-num{font-size:36px;font-weight:900;line-height:1}
+.sc-lbl{font-size:13px;font-weight:700;color:#5d5a66;margin-top:4px}
+.avg-card{margin-bottom:14px}
+
+/* ---------- progress chart ---------- */
+.prog-head{display:flex;align-items:center;gap:8px;margin:2px 2px 10px}
+.prog-head h3{font-size:17px;font-weight:900;margin:0;flex:1}
+.prog-ico{width:34px;height:34px;border-radius:50%;background:#fff;
+  box-shadow:0 6px 14px rgba(90,70,160,.10);display:flex;align-items:center;justify-content:center}
+.prog-ico svg{width:18px;height:18px;stroke:var(--accent-dark);fill:none;stroke-width:2.2;stroke-linecap:round}
+.icon-mini{width:34px;height:34px;border-radius:50%;border:0;background:#fff;
+  box-shadow:0 6px 14px rgba(90,70,160,.10);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.icon-mini svg{width:16px;height:16px;fill:var(--gray)}
+.chart{background:var(--lav);
+  background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.4) 0 12px,transparent 12px 24px);
+  border-radius:26px;padding:20px 16px 14px;box-shadow:var(--shadow);margin-bottom:16px}
+.bars{display:flex;justify-content:space-around;align-items:flex-end;min-height:190px}
+.bar-col{display:flex;flex-direction:column;align-items:center}
+.pill{width:62px;border-radius:999px;background:#fff;box-shadow:0 8px 18px rgba(90,70,160,.14);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.pill b{font-size:19px;font-weight:900}
+.pill span{font-size:10.5px;font-weight:800;color:var(--gray)}
+.bar-lbl{font-size:12.5px;font-weight:800;color:#5d5a66;margin-top:10px}
+
+/* ---------- absensi controls ---------- */
+.datenav{display:flex;gap:10px;align-items:center;margin-bottom:14px}
+.iconbtn{width:46px;height:46px;border-radius:50%;border:0;background:#fff;
+  box-shadow:0 8px 20px rgba(90,70,160,.12);font-size:22px;font-weight:900;
+  color:var(--accent-dark);cursor:pointer;flex-shrink:0;line-height:1}
+input[type=date]{flex:1;border:0;background:#fff;border-radius:18px;padding:13px 12px;
+  font-family:inherit;font-weight:800;font-size:14px;color:var(--ink);
+  box-shadow:0 8px 20px rgba(90,70,160,.12);min-width:0}
+.summary{text-align:center;font-size:14px;font-weight:700}
+
+/* ---------- rows ---------- */
+.row{display:flex;align-items:center;gap:12px;background:#fff;border-radius:22px;
+  padding:12px 14px;margin-bottom:10px;box-shadow:0 8px 20px rgba(90,70,160,.10);cursor:pointer}
+.row:active{transform:scale(.99)}
+.row-main{flex:1;min-width:0}
+.row-name{font-weight:800;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-sub{font-size:12px;color:var(--gray);font-weight:700}
+.avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:15px;flex-shrink:0;color:var(--ink)}
+.avatar.teacher{background:var(--accent);color:#fff}
+.avatar.big{width:76px;height:76px;font-size:26px;margin:0 auto 10px}
+.badge{font-size:12px;font-weight:800;padding:7px 13px;border-radius:999px;flex-shrink:0}
+.st-h{background:var(--green-bg);color:var(--green-tx)}
+.st-s{background:var(--yellow-bg);color:var(--yellow-tx)}
+.st-i{background:var(--blue-bg);color:var(--blue-tx)}
+.st-a{background:var(--red-bg);color:var(--red-tx)}
+.chev{font-size:22px;font-weight:900;color:#C9C2DC}
+
+/* ---------- buttons ---------- */
+.btn-pill{display:block;width:100%;border:0;border-radius:999px;background:var(--ink);color:#fff;
+  font-family:inherit;font-weight:800;font-size:16px;padding:16px;cursor:pointer;
+  box-shadow:0 10px 22px rgba(46,42,51,.25)}
+.btn-pill:active{transform:scale(.98)}
+.btn-ghost{display:block;width:100%;border:0;border-radius:999px;background:#fff;color:var(--ink);
+  font-family:inherit;font-weight:800;font-size:15px;padding:14px;margin-bottom:14px;cursor:pointer;
+  box-shadow:0 8px 20px rgba(90,70,160,.12)}
+.btn-ghost:active{transform:scale(.98)}
+.btn-circle{width:58px;height:58px;border-radius:50%;border:0;background:var(--accent);cursor:pointer;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 10px 22px rgba(139,124,246,.45)}
+.btn-circle:active{transform:scale(.95)}
+
+/* ---------- sinkronisasi excel ---------- */
+.sync-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.sync-row .btn-pill,.sync-row .btn-ghost{padding:13px;font-size:13.5px;margin-bottom:0;
+  display:flex;align-items:center;justify-content:center;gap:8px}
+.sync-row svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2;
+  stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.btn-circle svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2.6;
+  stroke-linecap:round;stroke-linejoin:round}
+.sticky-save{position:sticky;bottom:104px;margin-top:16px;z-index:5}
+
+/* ---------- search / select / score ---------- */
+.search{display:flex;align-items:center;gap:10px;background:#fff;border-radius:20px;
+  padding:13px 16px;box-shadow:0 8px 20px rgba(90,70,160,.10);margin-bottom:14px}
+.search svg{width:20px;height:20px;stroke:var(--gray);flex-shrink:0;fill:none;stroke-width:2.4;stroke-linecap:round}
+.search input{border:0;outline:0;flex:1;font-family:inherit;font-weight:700;font-size:15px;
+  background:none;color:var(--ink)}
+.fld-label{display:block;font-size:13px;font-weight:800;color:var(--gray);margin:0 0 8px 4px}
+.select{width:100%;border:0;background:#fff;border-radius:20px;padding:14px 16px;
+  font-family:inherit;font-weight:800;font-size:15px;color:var(--ink);
+  box-shadow:0 8px 20px rgba(90,70,160,.10);margin-bottom:14px;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238B7CF6' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 16px center}
+.score{width:78px;flex-shrink:0;border:2px solid var(--lav);border-radius:14px;padding:10px 6px;
+  font-family:inherit;font-weight:900;font-size:15px;text-align:center;color:var(--ink);
+  background:var(--cream);outline:none}
+.score:focus{border-color:var(--accent)}
+
+/* ---------- tab bar ---------- */
+.tabbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:min(480px,100%);background:#fff;border-radius:22px 22px 0 0;
+  box-shadow:0 -10px 28px rgba(90,70,160,.16);display:flex;
+  padding:8px 8px calc(8px + env(safe-area-inset-bottom));z-index:50}
+.tab{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:4px;
+  font-family:inherit;font-size:11px;font-weight:800;color:var(--gray);padding:9px 0;
+  border-radius:22px;cursor:pointer;position:relative;z-index:1}
+.tab.active{color:var(--accent-dark)}
+.tab-ind{position:absolute;top:8px;left:8px;width:64px;height:calc(100% - 16px);
+  background:var(--lav);border-radius:22px;z-index:0;
+  transition:left .32s cubic-bezier(.22,.8,.36,1),width .32s cubic-bezier(.22,.8,.36,1)}
+.tab svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- sheet / toast ---------- */
+.scrim{position:fixed;inset:0;background:rgba(46,42,51,.35);opacity:0;pointer-events:none;
+  transition:opacity .3s;z-index:55}
+.scrim.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:50%;bottom:0;width:min(480px,100%);background:#fff;
+  border-radius:28px 28px 0 0;padding:22px 22px 34px;z-index:60;max-height:82dvh;overflow:auto;
+  transform:translateX(-50%) translateY(105%);transition:transform .32s ease}
+.sheet.open{transform:translateX(-50%) translateY(0)}
+.sheet-x{position:absolute;top:14px;right:18px;border:0;background:var(--lav);color:var(--accent-dark);
+  width:34px;height:34px;border-radius:50%;font-size:20px;font-weight:900;cursor:pointer;line-height:1}
+.sheet-head{text-align:center;margin-bottom:14px}
+.sheet-head h3{margin:6px 0 4px;font-size:19px;font-weight:900}
+.ministats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.mini{border-radius:16px;padding:10px 4px;text-align:center}
+.mini .n{font-size:20px;font-weight:900}
+.mini .l{font-size:11px;font-weight:800;color:var(--gray)}
+.toast{position:fixed;bottom:112px;left:50%;transform:translateX(-50%) translateY(16px);
+  background:var(--ink);color:#fff;padding:12px 22px;border-radius:999px;font-weight:800;
+  font-size:14px;opacity:0;transition:opacity .28s ease,transform .28s cubic-bezier(.22,.8,.36,1);z-index:70;pointer-events:none;max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ---------- onboarding (mirip layar 1 referensi) ---------- */
+#onboarding{position:fixed;inset:0;z-index:100;background:#C9B6E9;display:flex;
+  flex-direction:column;overflow:hidden}
+.onb-art{position:relative;flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
+.onb-art svg.books{width:min(70vw,280px);height:auto;position:relative;z-index:1;
+  animation:fadeUp .55s cubic-bezier(.22,.8,.36,1) backwards}
+.spark{position:absolute;fill:#fff;z-index:0;animation:tw 2.6s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.45;transform:scale(.82) rotate(0deg)}50%{opacity:1;transform:scale(1.1) rotate(10deg)}}
+.onb-card{background:#fff;border-radius:34px;margin:0 18px 20px;padding:28px 24px 20px;
+  box-shadow:0 18px 44px rgba(80,55,140,.25);position:relative;z-index:2;
+  animation:fadeUp .5s cubic-bezier(.22,.8,.36,1) .08s backwards}
+.onb-card h1{font-size:30px;font-weight:900;line-height:1.2;margin:0 0 10px;text-align:center}
+.onb-card p{font-size:14px;color:var(--gray);font-weight:600;line-height:1.6;text-align:center;margin:0 0 22px}
+.onb-actions{display:flex;gap:12px;align-items:center}
+.onb-actions .btn-pill{flex:1}
+.home-indicator{width:134px;height:5px;border-radius:99px;background:var(--ink);opacity:.85;margin:18px auto 0}
+
+/* ---------- login ---------- */
+.login-wrap{max-width:400px;margin:0 auto;padding-top:6px}
+.login-robot{display:flex;justify-content:center;margin-bottom:2px}
+.login-robot svg{width:148px;height:auto}
+.login-card{padding:24px 20px}
+.pin-input{width:100%;border:2px solid var(--lav);border-radius:18px;padding:14px 10px;
+  font-family:inherit;font-weight:900;font-size:22px;text-align:center;letter-spacing:8px;
+  text-indent:8px;color:var(--ink);background:var(--cream);outline:none;margin-bottom:12px}
+.pin-input:focus{border-color:var(--accent)}
+.login-err{color:#C2255C;font-size:13px;font-weight:800;text-align:center;min-height:20px;margin:2px 0 10px}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
+.shake{animation:shake .45s cubic-bezier(.36,.07,.19,.97)}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+
+  <!-- ============ ONBOARDING ============ -->
+  <div id="onboarding">
+    <div class="onb-art">
+      <svg class="spark" style="left:12%;top:12%" width="26" height="26" viewBox="-12 -12 24 24"><path d="M0 -12 C 1.5 -4 4 -1.5 12 0 C 4 1.5 1.5 4 0 12 C -1.5 4 -4 1.5 -12 0 C -4 -1.5 -1.5 -4 0 -12 Z"/></svg>
+      <svg class="spark" style="left:82%;top:9%;animation-delay:.7s" width="18" height="18" viewBox="-12 -12 24 24"><path d="M0 -12 C 1.5 -4 4 -1.5 12 0 C 4 1.5 1.5 4 0 12 C -1.5 4 -4 1.5 -12 0 C -4 -1.5 -1.5 -4 0 -12 Z"/></svg>
+      <svg class="spark" style="left:70%;top:32%;animation-delay:1.3s" width="32" height="32" viewBox="-12 -12 24 24"><path d="M0 -12 C 1.5 -4 4 -1.5 12 0 C 4 1.5 1.5 4 0 12 C -1.5 4 -4 1.5 -12 0 C -4 -1.5 -1.5 -4 0 -12 Z"/></svg>
+      <svg class="spark" style="left:16%;top:38%;animation-delay:1.9s" width="15" height="15" viewBox="-12 -12 24 24"><path d="M0 -12 C 1.5 -4 4 -1.5 12 0 C 4 1.5 1.5 4 0 12 C -1.5 4 -4 1.5 -12 0 C -4 -1.5 -1.5 -4 0 -12 Z"/></svg>
+      <svg class="spark" style="left:88%;top:52%;animation-delay:.4s" width="22" height="22" viewBox="-12 -12 24 24"><path d="M0 -12 C 1.5 -4 4 -1.5 12 0 C 4 1.5 1.5 4 0 12 C -1.5 4 -4 1.5 -12 0 C -4 -1.5 -1.5 -4 0 -12 Z"/></svg>
+      <svg class="spark" style="left:8%;top:62%;animation-delay:2.2s" width="20" height="20" viewBox="-12 -12 24 24"><path d="M0 -12 C 1.5 -4 4 -1.5 12 0 C 4 1.5 1.5 4 0 12 C -1.5 4 -4 1.5 -12 0 C -4 -1.5 -1.5 -4 0 -12 Z"/></svg>
+      <svg class="books" viewBox="0 0 240 210" aria-hidden="true">
+        <ellipse cx="120" cy="192" rx="88" ry="11" fill="#B79CE0"/>
+        <!-- books prop -->
+        <g>
+          <rect x="172" y="160" width="48" height="26" rx="7" fill="#FCE9A6"/>
+          <rect x="172" y="160" width="11" height="26" rx="7" fill="#F2B84B"/>
+          <rect x="187" y="165" width="27" height="16" rx="4" fill="#ffffff"/>
+          <rect x="176" y="136" width="44" height="24" rx="7" fill="#FBDCC3"/>
+          <rect x="176" y="136" width="10" height="24" rx="7" fill="#E8A87C"/>
+          <rect x="190" y="141" width="24" height="14" rx="4" fill="#ffffff"/>
+        </g>
+        <!-- antenna -->
+        <line x1="105" y1="38" x2="105" y2="18" stroke="#6C99E0" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="105" cy="12" r="8" fill="#F2B84B"/>
+        <circle cx="102" cy="9" r="2.5" fill="#FFE9A8"/>
+        <!-- ears -->
+        <circle cx="50" cy="74" r="10" fill="#F2B84B"/>
+        <circle cx="160" cy="74" r="10" fill="#F2B84B"/>
+        <!-- head -->
+        <rect x="46" y="38" width="118" height="82" rx="32" fill="#A8C5F2"/>
+        <!-- eyes -->
+        <circle cx="88" cy="74" r="13" fill="#ffffff"/>
+        <circle cx="122" cy="74" r="13" fill="#ffffff"/>
+        <circle cx="90" cy="76" r="6" fill="#2E2A33"/>
+        <circle cx="120" cy="76" r="6" fill="#2E2A33"/>
+        <circle cx="92" cy="74" r="2.2" fill="#ffffff"/>
+        <circle cx="122" cy="74" r="2.2" fill="#ffffff"/>
+        <!-- cheeks -->
+        <circle cx="70" cy="94" r="7" fill="#FFB6C9" opacity=".85"/>
+        <circle cx="140" cy="94" r="7" fill="#FFB6C9" opacity=".85"/>
+        <!-- smile -->
+        <path d="M94 96 Q105 108 116 96" stroke="#2E2A33" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <!-- neck -->
+        <rect x="100" y="118" width="10" height="12" fill="#6C99E0"/>
+        <!-- left arm -->
+        <line x1="70" y1="134" x2="48" y2="160" stroke="#6C99E0" stroke-width="12" stroke-linecap="round"/>
+        <circle cx="46" cy="162" r="8" fill="#6C99E0"/>
+        <!-- right arm waving -->
+        <line x1="140" y1="134" x2="166" y2="98" stroke="#6C99E0" stroke-width="12" stroke-linecap="round"/>
+        <circle cx="168" cy="94" r="8" fill="#6C99E0"/>
+        <line x1="182" y1="78" x2="190" y2="68" stroke="#F2B84B" stroke-width="4" stroke-linecap="round"/>
+        <line x1="190" y1="90" x2="200" y2="86" stroke="#F2B84B" stroke-width="4" stroke-linecap="round"/>
+        <line x1="186" y1="104" x2="196" y2="106" stroke="#F2B84B" stroke-width="4" stroke-linecap="round"/>
+        <!-- body -->
+        <rect x="72" y="128" width="66" height="48" rx="18" fill="#9D8DF2"/>
+        <rect x="86" y="138" width="38" height="22" rx="11" fill="#B7A9F7"/>
+        <circle cx="105" cy="149" r="7" fill="#FCE9A6"/>
+        <!-- legs & feet -->
+        <rect x="86" y="172" width="14" height="18" rx="7" fill="#6C99E0"/>
+        <rect x="110" y="172" width="14" height="18" rx="7" fill="#6C99E0"/>
+        <ellipse cx="93" cy="192" rx="12" ry="6" fill="#5B87D6"/>
+        <ellipse cx="117" cy="192" rx="12" ry="6" fill="#5B87D6"/>
+      </svg>
+    </div>
+    <div class="onb-card">
+      <h1>Kelola Kelas<br>4A</h1>
+      <p>Absensi, nilai, dan data siswa dalam satu genggaman.</p>
+      <div class="onb-actions">
+        <button class="btn-pill" id="btnMulai">Mulai</button>
+        <button class="btn-circle" id="btnMulai2" aria-label="Mulai">
+          <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- ============ SCREENS ============ -->
+  <main id="screens">
+
+    <section class="screen" id="scr-beranda">
+      <header class="home-head">
+        <div class="home-user">
+          <div class="avatar teacher">RP</div>
+          <div>
+            <p class="hello">Halo, Pak Rizki</p>
+            <div class="mini-progress"><div id="miniPct"></div></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="icon-circle" id="btnLogout" aria-label="Keluar">
+            <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+          </button>
+          <button class="icon-circle" id="btnBell" aria-label="Notifikasi">
+            <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          </button>
+        </div>
+      </header>
+      <div class="home-title-row">
+        <h2 class="big-title">Progres<br>Hari Ini</h2>
+        <button class="icon-circle" id="btnGoSearch" aria-label="Cari siswa">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        </button>
+      </div>
+      <p class="date-line" id="berandaDate"></p>
+
+      <div class="dash-card mint" data-go="absensi">
+        <div class="dc-top">
+          <span class="dc-icon">
+            <svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14l2 2 4-4"/></svg>
+          </span>
+          <span class="dc-rating">
+            <svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>
+            <b id="dcHadirPct">–</b>
+          </span>
+        </div>
+        <p class="dc-label">Absensi</p>
+        <h3 class="dc-title">Kehadiran<br>Hari Ini</h3>
+        <p class="dc-line" id="dcHadirLine">–</p>
+        <div class="dc-bottom">
+          <div class="dc-avatars" id="dcAvatars"></div>
+          <span class="dc-arrow">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+          </span>
+        </div>
+      </div>
+
+      <div class="dash-card lav" data-go="nilai">
+        <div class="dc-top">
+          <span class="dc-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M8 17v-5M13 17V8M18 17v-8"/></svg>
+          </span>
+          <span class="dc-arrow">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+          </span>
+        </div>
+        <p class="dc-label">Penilaian</p>
+        <h3 class="dc-title">Nilai &amp;<br>Rata-rata</h3>
+        <p class="dc-line" id="dcNilaiLine">–</p>
+      </div>
+
+      <div class="dash-card peach" data-go="jadwal">
+        <div class="dc-top">
+          <span class="dc-icon">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="4"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          </span>
+          <span class="dc-arrow">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+          </span>
+        </div>
+        <p class="dc-label">Jadwal</p>
+        <h3 class="dc-title">Pelajaran<br>Hari Ini</h3>
+        <p class="dc-line" id="dcJadwalLine">–</p>
+      </div>
+
+      <div class="card" id="jadwalCard">
+        <div class="card-title">Jadwal Hari Ini</div>
+        <div id="jadwalList"></div>
+      </div>
+
+      <div class="card" id="syncCard">
+        <div class="card-title">Sinkronisasi Excel</div>
+        <p class="small muted" id="syncInfo" style="margin:2px 0 0">Belum pernah sinkron.</p>
+        <button class="btn-pill" id="btnTarik" style="margin-bottom:10px">
+          <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px;margin-right:6px"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>
+          Tarik Data Terbaru
+        </button>
+        <div class="sync-row" style="margin-top:0">
+          <button class="btn-ghost" id="btnImpor">
+            <svg viewBox="0 0 24 24"><path d="M12 16V4"/><path d="M6 10l6-6 6 6"/><path d="M4 20h16"/></svg>
+            Impor dari Excel
+          </button>
+          <button class="btn-ghost" id="btnEkspor">
+            <svg viewBox="0 0 24 24"><path d="M12 4v12"/><path d="M6 14l6 6 6-6"/><path d="M4 20h16"/></svg>
+            Ekspor ke Excel
+          </button>
+        </div>
+        <input type="file" id="fileImpor" accept=".xlsm,.xlsx,.xls" hidden>
+        <div class="sync-row" style="margin-top:10px">
+          <button class="btn-ghost" id="btnBackupDb">
+            <svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            Backup Database
+          </button>
+          <button class="btn-ghost" id="btnRestoreDb">
+            <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+            Restore
+          </button>
+        </div>
+        <input type="file" id="fileRestoreDb" accept=".sqlite,.db,.json" hidden>
+      </div>
+    </section>
+
+    <section class="screen" id="scr-absensi">
+      <header class="page-head">
+        <button class="icon-circle" data-back aria-label="Kembali">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        </button>
+        <button class="icon-circle" id="btnAbsMenu" aria-label="Menu">
+          <svg viewBox="0 0 24 24" style="fill:var(--ink);stroke:none"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+        </button>
+      </header>
+      <h2 class="big-title">Absensi<br>Kelas</h2>
+      <p class="date-line" id="absensiDateLabel"></p>
+
+      <div class="stat2">
+        <div class="stat-card mint">
+          <div class="sc-top">
+            <span class="sc-ico">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5.5"/></svg>
+            </span>
+            <span class="sc-arrow">
+              <svg viewBox="0 0 24 24"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
+            </span>
+          </div>
+          <div class="sc-num" id="statHadir">0</div>
+          <div class="sc-lbl">Hadir</div>
+        </div>
+        <div class="stat-card yel">
+          <div class="sc-top">
+            <span class="sc-ico">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+            </span>
+            <span class="sc-arrow">
+              <svg viewBox="0 0 24 24"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
+            </span>
+          </div>
+          <div class="sc-num" id="statSakit">0</div>
+          <div class="sc-lbl">Sakit</div>
+        </div>
+      </div>
+
+      <div class="prog-head">
+        <span class="prog-ico">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.6 2.6 0 1 1 3.7 2.4c-.9.5-1.3 1-1.3 1.9"/><path d="M12 17h.01"/></svg>
+        </span>
+        <h3>Progress</h3>
+        <button class="icon-mini" id="btnProgMenu" aria-label="Opsi">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+        </button>
+      </div>
+      <div class="chart"><div class="bars" id="bars3"></div></div>
+
+      <div class="datenav">
+        <button class="iconbtn" id="prevDay" aria-label="Hari sebelumnya">&#8249;</button>
+        <input type="date" id="datePicker" aria-label="Pilih tanggal">
+        <button class="iconbtn" id="nextDay" aria-label="Hari berikutnya">&#8250;</button>
+      </div>
+      <div class="card summary" id="absensiSummary"></div>
+      <button class="btn-ghost" id="btnAllHadir">Tandai semua hadir</button>
+      <div id="absensiList"></div>
+      <div class="sticky-save"><button class="btn-pill" id="btnSimpanAbsensi">Simpan Absensi</button></div>
+      <p class="hint">Ketuk baris siswa untuk mengganti status: Hadir &rarr; Sakit &rarr; Izin &rarr; Alpa</p>
+    </section>
+
+    <section class="screen" id="scr-siswa">
+      <header class="page-head">
+        <button class="icon-circle" data-back aria-label="Kembali">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        </button>
+        <span class="icon-circle" style="visibility:hidden" aria-hidden="true"></span>
+      </header>
+      <h2 class="big-title">Data<br>Siswa</h2>
+      <p class="date-line">Kelas 4A &bull; 32 siswa &bull; SDN Grogol Utara 09</p>
+      <div class="search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="searchSiswa" type="search" placeholder="Cari nama siswa..." autocomplete="off">
+      </div>
+      <div id="siswaList"></div>
+    </section>
+
+    <section class="screen" id="scr-nilai">
+      <header class="page-head">
+        <button class="icon-circle" data-back aria-label="Kembali">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        </button>
+        <span class="icon-circle" style="visibility:hidden" aria-hidden="true"></span>
+      </header>
+      <h2 class="big-title">Nilai<br>Siswa</h2>
+      <p class="date-line">Kelola nilai siswa</p>
+      <label class="fld-label" for="mapelSelect">Mata pelajaran</label>
+      <select id="mapelSelect" class="select"></select>
+      <div class="stat-card mint avg-card">
+        <div class="sc-top">
+          <span class="sc-ico">
+            <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M8 17v-5M13 17V8M18 17v-8"/></svg>
+          </span>
+        </div>
+        <div class="sc-num" id="avgLabel">&ndash;</div>
+        <div class="sc-lbl">Rata-rata kelas</div>
+      </div>
+      <div id="nilaiList"></div>
+      <div class="sticky-save"><button class="btn-pill" id="btnSimpanNilai">Simpan Nilai</button></div>
+    </section>
+  
+    <section class="screen" id="scr-login">
+      <div class="login-wrap">
+        <div class="login-robot">
+          <svg class="books" viewBox="0 0 240 210" aria-hidden="true">
+        <ellipse cx="120" cy="192" rx="88" ry="11" fill="#B79CE0"/>
+        <!-- books prop -->
+        <g>
+          <rect x="172" y="160" width="48" height="26" rx="7" fill="#FCE9A6"/>
+          <rect x="172" y="160" width="11" height="26" rx="7" fill="#F2B84B"/>
+          <rect x="187" y="165" width="27" height="16" rx="4" fill="#ffffff"/>
+          <rect x="176" y="136" width="44" height="24" rx="7" fill="#FBDCC3"/>
+          <rect x="176" y="136" width="10" height="24" rx="7" fill="#E8A87C"/>
+          <rect x="190" y="141" width="24" height="14" rx="4" fill="#ffffff"/>
+        </g>
+        <!-- antenna -->
+        <line x1="105" y1="38" x2="105" y2="18" stroke="#6C99E0" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="105" cy="12" r="8" fill="#F2B84B"/>
+        <circle cx="102" cy="9" r="2.5" fill="#FFE9A8"/>
+        <!-- ears -->
+        <circle cx="50" cy="74" r="10" fill="#F2B84B"/>
+        <circle cx="160" cy="74" r="10" fill="#F2B84B"/>
+        <!-- head -->
+        <rect x="46" y="38" width="118" height="82" rx="32" fill="#A8C5F2"/>
+        <!-- eyes -->
+        <circle cx="88" cy="74" r="13" fill="#ffffff"/>
+        <circle cx="122" cy="74" r="13" fill="#ffffff"/>
+        <circle cx="90" cy="76" r="6" fill="#2E2A33"/>
+        <circle cx="120" cy="76" r="6" fill="#2E2A33"/>
+        <circle cx="92" cy="74" r="2.2" fill="#ffffff"/>
+        <circle cx="122" cy="74" r="2.2" fill="#ffffff"/>
+        <!-- cheeks -->
+        <circle cx="70" cy="94" r="7" fill="#FFB6C9" opacity=".85"/>
+        <circle cx="140" cy="94" r="7" fill="#FFB6C9" opacity=".85"/>
+        <!-- smile -->
+        <path d="M94 96 Q105 108 116 96" stroke="#2E2A33" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <!-- neck -->
+        <rect x="100" y="118" width="10" height="12" fill="#6C99E0"/>
+        <!-- left arm -->
+        <line x1="70" y1="134" x2="48" y2="160" stroke="#6C99E0" stroke-width="12" stroke-linecap="round"/>
+        <circle cx="46" cy="162" r="8" fill="#6C99E0"/>
+        <!-- right arm waving -->
+        <line x1="140" y1="134" x2="166" y2="98" stroke="#6C99E0" stroke-width="12" stroke-linecap="round"/>
+        <circle cx="168" cy="94" r="8" fill="#6C99E0"/>
+        <line x1="182" y1="78" x2="190" y2="68" stroke="#F2B84B" stroke-width="4" stroke-linecap="round"/>
+        <line x1="190" y1="90" x2="200" y2="86" stroke="#F2B84B" stroke-width="4" stroke-linecap="round"/>
+        <line x1="186" y1="104" x2="196" y2="106" stroke="#F2B84B" stroke-width="4" stroke-linecap="round"/>
+        <!-- body -->
+        <rect x="72" y="128" width="66" height="48" rx="18" fill="#9D8DF2"/>
+        <rect x="86" y="138" width="38" height="22" rx="11" fill="#B7A9F7"/>
+        <circle cx="105" cy="149" r="7" fill="#FCE9A6"/>
+        <!-- legs & feet -->
+        <rect x="86" y="172" width="14" height="18" rx="7" fill="#6C99E0"/>
+        <rect x="110" y="172" width="14" height="18" rx="7" fill="#6C99E0"/>
+        <ellipse cx="93" cy="192" rx="12" ry="6" fill="#5B87D6"/>
+        <ellipse cx="117" cy="192" rx="12" ry="6" fill="#5B87D6"/>
+      </svg>
+        </div>
+        <h2 class="big-title center">Selamat<br>Datang</h2>
+        <p class="muted small center" style="margin:8px 4px 18px;font-weight:700">Masuk untuk mengelola Kelas 4A</p>
+        <div class="card login-card" id="loginCard">
+          <div id="loginSetup">
+            <label class="fld-label" for="pinBaru">Buat PIN (6 digit angka)</label>
+            <input class="pin-input" id="pinBaru" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="new-password" aria-label="Buat PIN">
+            <label class="fld-label" for="pinKonfirmasi">Konfirmasi PIN</label>
+            <input class="pin-input" id="pinKonfirmasi" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="new-password" aria-label="Konfirmasi PIN">
+            <p class="login-err" id="setupErr"></p>
+            <button class="btn-pill" id="btnSimpanPin">Simpan PIN</button>
+          </div>
+          <div id="loginMasuk" style="display:none">
+            <label class="fld-label" for="pinMasuk">PIN (6 digit angka)</label>
+            <input class="pin-input" id="pinMasuk" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="current-password" aria-label="PIN">
+            <p class="login-err" id="masukErr"></p>
+            <button class="btn-pill" id="btnMasuk">Masuk</button>
+          </div>
+        </div>
+        <p class="hint">PIN tersimpan hanya di perangkat ini</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ TAB BAR ============ -->
+  <nav class="tabbar" aria-label="Navigasi utama">
+    <span class="tab-ind" aria-hidden="true"></span>
+    <button class="tab active" data-tab="beranda">
+      <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>
+      <span>Beranda</span>
+    </button>
+    <button class="tab" data-tab="absensi">
+      <svg viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2.5"/><path d="M9 4a3 3 0 016 0"/><path d="M9.5 13.5l2 2 3.5-4"/></svg>
+      <span>Absensi</span>
+    </button>
+    <button class="tab" data-tab="siswa">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.8"/><path d="M16.2 14.7c2.8.4 4.8 2.4 4.8 5.3"/></svg>
+      <span>Siswa</span>
+    </button>
+    <button class="tab" data-tab="nilai">
+      <svg viewBox="0 0 24 24"><path d="M4 20V11"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M2.5 20h19"/></svg>
+      <span>Nilai</span>
+    </button>
+  </nav>
+
+  <div class="scrim" id="scrim"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+'use strict';
+/* ================= DATA ================= */
+const STUDENTS = [
+  "Abdul Syarif Fawwazi","Achmad Nafriza Maulana","Adeeva Afsheen Bahri",
+  "Ahmad Fauzi Rohman","Aisyah Nuha Zahira","Al Bian Putra Hidayat",
+  "Allysa Ayunda Putri","Aqilah Dwi Septiani","Ariq Algian Prayata Suseno",
+  "Arya Bima","Cahya Bulan Ramadhani","Devan Aqlan Junior",
+  "Eliza Safira Nurrohmah","Hanna Nazifah Amelia","Keano Aqiel Bintang Utomo",
+  "Kheyna Ayudia Santosa","Muhamad Athaya Bilal Arifin","Muhammad Abiyan Nabil",
+  "Muhammad Azril Al-Malik","Muhammad Haikal Fajri","Muhammad Irsyan Syahputra",
+  "Muhammad Rasya Ramadhan","Nadhifa Sagita","Nino Syahrul Rifai",
+  "Nurulahya","Rafa Fauzan Kamil","Reyno Pradipta Putra",
+  "Rizky Yusuf Assik","Salwa Syifaul Aliya","Syifa Gita Ramadani",
+  "Zayn Malik Ibrahim","Zhufairah Imaniah"
+];
+const SUBJECTS = ["Matematika","B. Indonesia","IPAS","PPKn","Seni Rupa"];
+/* Jadwal Pelajaran Kelas IV A TP 2026/2027 (dari poster jadwal) */
+const JADWAL_HARI = {
+  1:["Upacara","P. Pancasila","P. Pancasila","Matematika","Istirahat","Matematika","Matematika","B. Indonesia","B. Indonesia"],
+  2:["Matematika","Matematika","B. Indonesia","B. Indonesia","Istirahat","B. Indonesia","IPAS","IPAS","IPAS"],
+  3:["PJOK","PJOK","PJOK","IPAS","Istirahat","IPAS","Pramuka","Pramuka"],
+  4:["Seni Rupa","Seni Rupa","Seni Rupa","P. Pancasila","Istirahat","P. Agama","P. Agama","P. Agama","P. Pancasila"],
+  5:["Tadarus","B. Inggris","B. Inggris","B. Indonesia","Istirahat","PLBJ","PLBJ"]
+};
+const NAMA_HARI = {0:"Minggu",1:"Senin",2:"Selasa",3:"Rabu",4:"Kamis",5:"Jumat",6:"Sabtu"};
+function jadwalHariIni(){
+  const d = jakartaDate().getDay();
+  return {nama:NAMA_HARI[d], list:JADWAL_HARI[d] || null};
+}
+const STATUS_ORDER = ["H","S","I","A"];
+const STATUS_LABEL = {H:"Hadir", S:"Sakit", I:"Izin", A:"Alpa"};
+const STATUS_CLASS = {H:"st-h", S:"st-s", I:"st-i", A:"st-a"};
+const AVC = ["#E9E2F8","#FFD9E3","#DCEBFF","#FFF3C9","#DDF6D9","#F0E4FF"];
+const LS_ONB = "kelasku4a_onboarded",
+      LS_ATT = "kelasku4a_attendance",
+      LS_GRD = "kelasku4a_grades",
+      LS_PIN = "kelasku4a_pin_hash",
+      LS_SESSION = "kelasku4a_session",
+      LS_SYNC = "kelasku4a_excel_sync",
+      LS_SYNC_SRV = "kelasku4a_excel_server_ts";
+const BULAN_MAP = {januari:1,februari:2,maret:3,april:4,mei:5,juni:6,juli:7,
+  agustus:8,september:9,oktober:10,november:11,desember:12};
+const EXCEL2APP = {".":"H", s:"S", i:"I", a:"A"};
+const HARI = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+const BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus",
+               "September","Oktober","November","Desember"];
+
+/* ================= HELPERS ================= */
+const $ = s => document.querySelector(s);
+function jakartaDate(){
+  return new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Jakarta"}));
+}
+function isoOf(d){
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+
+         String(d.getDate()).padStart(2,"0");
+}
+function parseISO(s){
+  const p = s.split("-").map(Number);
+  return new Date(p[0], p[1]-1, p[2]);
+}
+function fmtLong(iso){
+  const d = parseISO(iso);
+  return HARI[d.getDay()]+", "+d.getDate()+" "+BULAN[d.getMonth()]+" "+d.getFullYear();
+}
+function fmtShort(iso){
+  const d = parseISO(iso);
+  return d.getDate()+" "+BULAN[d.getMonth()]+" "+d.getFullYear();
+}
+function shiftISO(iso, delta){
+  const d = parseISO(iso);
+  d.setDate(d.getDate()+delta);
+  return isoOf(d);
+}
+function initials(name){
+  const w = name.split(" ");
+  return (w[0][0] + (w[1] ? w[1][0] : "")).toUpperCase();
+}
+const store = {
+  get(k, fb){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }
+              catch(e){ return fb; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+let toastT = null;
+function toast(msg){
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>t.classList.remove("show"), 2200);
+}
+function openSheet(html){
+  $("#sheet").innerHTML = html;
+  $("#sheet").classList.add("open");
+  $("#scrim").classList.add("open");
+}
+function closeSheet(){
+  $("#sheet").classList.remove("open");
+  $("#scrim").classList.remove("open");
+}
+
+/* ================= DB: SQLite (sql.js) dengan fallback localStorage =================
+   API async: getAbsensi/getAllAbsensi/setAbsensi/setAllAbsensi,
+   getNilai/setNilai, metaGet/metaSet, ready.
+   sql.js berjalan in-memory; setiap tulis -> export() -> base64 -> localStorage
+   (key kelasku4a_sqlite). Jika CDN sql.js gagal dimuat, otomatis pakai
+   localStorage seperti sebelumnya. */
+const LS_SQLITE = "kelasku4a_sqlite";
+const LS_MIGRATED = "kelasku4a_migrated_sqlite";
+
+function createTables(sdb){
+  sdb.run("CREATE TABLE IF NOT EXISTS siswa(nama TEXT PRIMARY KEY, no_absen INTEGER)");
+  sdb.run("CREATE TABLE IF NOT EXISTS absensi(tanggal TEXT, nama TEXT, status TEXT, PRIMARY KEY(tanggal,nama))");
+  sdb.run("CREATE TABLE IF NOT EXISTS nilai(mapel TEXT, nama TEXT, nilai REAL, PRIMARY KEY(mapel,nama))");
+  sdb.run("CREATE TABLE IF NOT EXISTS meta(kunci TEXT PRIMARY KEY, nilai TEXT)");
+}
+
+/* Pindahkan SEMUA data localStorage lama -> SQLite. storage: objek mirip
+   localStorage (getItem/setItem/removeItem). Mengembalikan true bila migrasi
+   dijalankan. Fungsi murni — dapat diuji di node. */
+function migrateFromLocalStorage(sdb, storage){
+  const raw = k => { try{ return storage.getItem(k); }catch(e){ return null; } };
+  if(raw(LS_MIGRATED) === "1") return false;
+  const parsed = k => {
+    const v = raw(k);
+    if(v === null || v === undefined) return null;
+    try{ return JSON.parse(v); }catch(e){ return null; }
+  };
+  // siswa selalu diisi dari konstanta roster
+  const ss = sdb.prepare("INSERT OR IGNORE INTO siswa(nama,no_absen) VALUES(?,?)");
+  STUDENTS.forEach((n,i) => ss.run([n, i+1]));
+  ss.free();
+  // absensi: {"YYYY-MM-DD": {nama: "H"|"S"|"I"|"A"}}
+  const att = parsed(LS_ATT);
+  if(att && typeof att === "object"){
+    const sa = sdb.prepare("INSERT OR REPLACE INTO absensi(tanggal,nama,status) VALUES(?,?,?)");
+    Object.keys(att).forEach(iso => {
+      const rec = att[iso] || {};
+      Object.keys(rec).forEach(nama => {
+        if(typeof rec[nama] === "string") sa.run([iso, nama, rec[nama]]);
+      });
+    });
+    sa.free();
+  }
+  // nilai: {mapel: {nama: angka}}
+  const grd = parsed(LS_GRD);
+  if(grd && typeof grd === "object"){
+    const sn = sdb.prepare("INSERT OR REPLACE INTO nilai(mapel,nama,nilai) VALUES(?,?,?)");
+    Object.keys(grd).forEach(mp => {
+      const rec = grd[mp] || {};
+      Object.keys(rec).forEach(nama => {
+        if(typeof rec[nama] === "number") sn.run([mp, nama, rec[nama]]);
+      });
+    });
+    sn.free();
+  }
+  // meta: pindahkan raw JSON string apa adanya (konsisten dgn JSON.parse di metaGet)
+  const sm = sdb.prepare("INSERT OR REPLACE INTO meta(kunci,nilai) VALUES(?,?)");
+  [[LS_PIN,"pin_hash"],[LS_ONB,"onboarded"],[LS_SESSION,"session"],
+   [LS_SYNC,"excel_sync"],[LS_SYNC_SRV,"excel_server_ts"]].forEach(([ok,nk]) => {
+    const v = raw(ok);
+    if(v !== null && v !== undefined) sm.run([nk, String(v)]);
+  });
+  sm.free();
+  // hapus key lama, tandai sudah migrasi
+  [LS_ONB,LS_ATT,LS_GRD,LS_PIN,LS_SESSION,LS_SYNC,LS_SYNC_SRV].forEach(k => {
+    try{ storage.removeItem(k); }catch(e){}
+  });
+  try{ storage.setItem(LS_MIGRATED, "1"); }catch(e){}
+  return true;
+}
+
+/* Seed bawaan bila tabel masih kosong (pengguna baru). */
+function seedDefaults(sdb){
+  const count = t => {
+    const r = sdb.exec("SELECT COUNT(*) AS c FROM " + t);
+    return r.length ? r[0].values[0][0] : 0;
+  };
+  if(count("absensi") === 0){
+    const sa = sdb.prepare("INSERT OR REPLACE INTO absensi(tanggal,nama,status) VALUES(?,?,?)");
+    STUDENTS.forEach(nm => {
+      const st = (nm === "Eliza Safira Nurrohmah" || nm === "Ahmad Fauzi Rohman") ? "S" : "H";
+      sa.run(["2026-10-08", nm, st]);
+    });
+    sa.free();
+  }
+  if(count("nilai") === 0){
+    const sn = sdb.prepare("INSERT OR REPLACE INTO nilai(mapel,nama,nilai) VALUES(?,?,?)");
+    STUDENTS.forEach(nm => sn.run(["Matematika", nm, 70 + Math.floor(Math.random()*26)]));
+    sn.free();
+  }
+}
+
+const db = {
+  _sdb: null, _SQL: null, _mode: "local", _ready: null,
+  ready(){ return this._ready; },
+  mode(){ return this._mode; },
+
+  init(){
+    this._ready = (async () => {
+      let SQL = null;
+      try{
+        if(typeof initSqlJs !== "undefined"){
+          SQL = await initSqlJs({locateFile: f =>
+            "https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/" + f});
+        }
+      }catch(e){ SQL = null; }
+      if(SQL){
+        try{
+          let sdb = null;
+          const b64 = (() => { try{ return localStorage.getItem(LS_SQLITE); }catch(e){ return null; } })();
+          if(b64){
+            const bin = atob(b64);
+            const u8 = new Uint8Array(bin.length);
+            for(let i=0;i<bin.length;i++) u8[i] = bin.charCodeAt(i);
+            sdb = new SQL.Database(u8);
+          }else{
+            sdb = new SQL.Database();
+          }
+          createTables(sdb);
+          migrateFromLocalStorage(sdb, window.localStorage);
+          seedDefaults(sdb);
+          this._SQL = SQL;
+          this._sdb = sdb;
+          this._mode = "sqlite";
+          this._persist();
+          return;
+        }catch(e){ /* jatuh ke fallback localStorage */ }
+      }
+      this._mode = "local";
+    })();
+    return this._ready;
+  },
+
+  _persist(){
+    if(this._mode !== "sqlite" || !this._sdb) return;
+    try{
+      const data = this._sdb.export();
+      let bin = "";
+      const CH = 32768;
+      for(let i=0;i<data.length;i+=CH){
+        bin += String.fromCharCode.apply(null, data.subarray(i, Math.min(i+CH, data.length)));
+      }
+      localStorage.setItem(LS_SQLITE, btoa(bin));
+    }catch(e){}
+  },
+
+  /* ---------- absensi ---------- */
+  async getAllAbsensi(){
+    if(this._mode === "sqlite"){
+      const out = {};
+      const res = this._sdb.exec("SELECT tanggal,nama,status FROM absensi ORDER BY tanggal");
+      if(res.length) res[0].values.forEach(r => {
+        (out[r[0]] = out[r[0]] || {})[r[1]] = r[2];
+      });
+      return out;
+    }
+    return store.get(LS_ATT, {});
+  },
+  async getAbsensi(){ return this.getAllAbsensi(); },
+
+  async setAbsensi(iso, nama, status){
+    if(this._mode === "sqlite"){
+      this._sdb.run("INSERT OR REPLACE INTO absensi(tanggal,nama,status) VALUES(?,?,?)",
+        [iso, nama, status]);
+      this._persist();
+    }else{
+      const att = store.get(LS_ATT, {});
+      (att[iso] = att[iso] || {})[nama] = status;
+      store.set(LS_ATT, att);
+    }
+  },
+
+  async setAllAbsensi(obj){
+    if(this._mode === "sqlite"){
+      this._sdb.run("DELETE FROM absensi");
+      const st = this._sdb.prepare("INSERT INTO absensi(tanggal,nama,status) VALUES(?,?,?)");
+      Object.keys(obj).forEach(iso => {
+        const rec = obj[iso] || {};
+        Object.keys(rec).forEach(nama => st.run([iso, nama, rec[nama]]));
+      });
+      st.free();
+      this._persist();
+    }else{
+      store.set(LS_ATT, obj);
+    }
+  },
+
+  /* ---------- nilai ---------- */
+  async getNilai(){
+    if(this._mode === "sqlite"){
+      const out = {};
+      const res = this._sdb.exec("SELECT mapel,nama,nilai FROM nilai");
+      if(res.length) res[0].values.forEach(r => {
+        (out[r[0]] = out[r[0]] || {})[r[1]] = r[2];
+      });
+      return out;
+    }
+    return store.get(LS_GRD, {});
+  },
+
+  async setNilai(mapel, nama, val){
+    if(this._mode === "sqlite"){
+      this._sdb.run("INSERT OR REPLACE INTO nilai(mapel,nama,nilai) VALUES(?,?,?)",
+        [mapel, nama, val]);
+      this._persist();
+    }else{
+      const grd = store.get(LS_GRD, {});
+      (grd[mapel] = grd[mapel] || {})[nama] = val;
+      store.set(LS_GRD, grd);
+    }
+  },
+
+  /* ---------- meta (onboarded, session, pin_hash, excel_sync, excel_server_ts) ---------- */
+  _metaKey(k){ return "kelasku4a_meta_" + k; },
+
+  async metaGet(k, fb){
+    if(this._mode === "sqlite"){
+      const st = this._sdb.prepare("SELECT nilai FROM meta WHERE kunci=?");
+      st.bind([k]);
+      let rawv = null;
+      if(st.step()) rawv = st.getAsObject().nilai;
+      st.free();
+      if(rawv === null || rawv === undefined) return fb;
+      try{ return JSON.parse(rawv); }catch(e){ return rawv; }
+    }
+    const map = {onboarded:LS_ONB, session:LS_SESSION, pin_hash:LS_PIN,
+                 excel_sync:LS_SYNC, excel_server_ts:LS_SYNC_SRV};
+    const kk = map[k] || this._metaKey(k);
+    const v = store.get(kk, undefined);
+    return v === undefined ? fb : v;
+  },
+
+  async metaSet(k, v){
+    if(this._mode === "sqlite"){
+      if(v === null || v === undefined){
+        this._sdb.run("DELETE FROM meta WHERE kunci=?", [k]);
+      }else{
+        this._sdb.run("INSERT OR REPLACE INTO meta(kunci,nilai) VALUES(?,?)",
+          [k, JSON.stringify(v)]);
+      }
+      this._persist();
+    }else{
+      const map = {onboarded:LS_ONB, session:LS_SESSION, pin_hash:LS_PIN,
+                   excel_sync:LS_SYNC, excel_server_ts:LS_SYNC_SRV};
+      const kk = map[k] || this._metaKey(k);
+      if(v === null || v === undefined){ try{ localStorage.removeItem(kk); }catch(e){} }
+      else store.set(kk, v);
+    }
+  },
+
+  /* ---------- backup / restore ---------- */
+  async backupBlob(){
+    const fname = "kelasku-4A-backup-" + isoOf(jakartaDate()).replace(/-/g,"");
+    if(this._mode === "sqlite" && this._sdb){
+      return {blob: new Blob([this._sdb.export()], {type:"application/x-sqlite3"}),
+              name: fname + ".sqlite"};
+    }
+    const data = {
+      app: "kelasku4a", v: 1,
+      absensi: await this.getAllAbsensi(),
+      nilai: await this.getNilai(),
+      meta: {
+        onboarded: await this.metaGet("onboarded", false),
+        pin_hash: await this.metaGet("pin_hash", null),
+        excel_sync: await this.metaGet("excel_sync", null),
+        excel_server_ts: await this.metaGet("excel_server_ts", null)
+      },
+      siswa: STUDENTS.slice()
+    };
+    return {blob: new Blob([JSON.stringify(data)], {type:"application/json"}),
+            name: fname + ".json"};
+  },
+
+  async restoreFromFile(file){
+    const buf = await file.arrayBuffer();
+    const u8 = new Uint8Array(buf);
+    const isSqlite = u8.length > 16 &&
+      u8[0]===0x53 && u8[1]===0x51 && u8[2]===0x4C && u8[3]===0x69; // "SQLi"
+    if(isSqlite){
+      if(this._mode !== "sqlite" || !this._SQL) throw new Error("no-sqlite");
+      const sdb = new this._SQL.Database(u8);
+      createTables(sdb);
+      const st = sdb.prepare("INSERT OR IGNORE INTO siswa(nama,no_absen) VALUES(?,?)");
+      STUDENTS.forEach((n,i) => st.run([n, i+1]));
+      st.free();
+      this._sdb = sdb;
+      this._persist();
+      return true;
+    }
+    const data = JSON.parse(new TextDecoder().decode(u8));
+    if(!data || typeof data !== "object" || !data.absensi) throw new Error("bad-file");
+    await this.setAllAbsensi(data.absensi);
+    if(this._mode === "sqlite"){
+      this._sdb.run("DELETE FROM nilai");
+      const st = this._sdb.prepare("INSERT INTO nilai(mapel,nama,nilai) VALUES(?,?,?)");
+      Object.keys(data.nilai || {}).forEach(mp => {
+        Object.keys(data.nilai[mp]).forEach(nm => st.run([mp, nm, data.nilai[mp][nm]]));
+      });
+      st.free();
+      this._persist();
+    }else{
+      store.set(LS_GRD, data.nilai || {});
+    }
+    if(data.meta && typeof data.meta === "object"){
+      for(const k of Object.keys(data.meta)){
+        if(data.meta[k] !== null && data.meta[k] !== undefined) await this.metaSet(k, data.meta[k]);
+      }
+    }
+    return true;
+  }
+};
+
+/* ================= MOTION ================= */
+const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let enterAnim = false;
+function countUp(el, target){
+  if(!el || isNaN(target)) return;
+  if(REDUCED){ el.textContent = target; return; }
+  const dur = 450, t0 = performance.now();
+  requestAnimationFrame(function tick(t){
+    const p = Math.min(1, (t - t0) / dur);
+    const e = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(target * e);
+    if(p < 1) requestAnimationFrame(tick);
+  });
+}
+function entrance(screen){
+  if(!screen || REDUCED) return;
+  const items = screen.querySelectorAll(".home-head,.home-title-row,.page-head,.date-line,.big-title,.dash-card,.stat-card,.prog-head,.chart,.datenav,.card,.btn-ghost,.sticky-save,.hint,.search,.fld-label,.select,.login-robot");
+  items.forEach(function(el, i){
+    el.style.setProperty("--i", i);
+    el.classList.remove("anim");
+    void el.offsetWidth;
+    el.classList.add("anim");
+  });
+}
+function moveTabInd(){
+  const bar = document.querySelector(".tabbar");
+  const act = bar ? bar.querySelector(".tab.active") : null;
+  const ind = bar ? bar.querySelector(".tab-ind") : null;
+  if(!act || !ind) return;
+  ind.style.left = act.offsetLeft + "px";
+  ind.style.width = act.offsetWidth + "px";
+}
+window.addEventListener("resize", moveTabInd);
+window.addEventListener("load", moveTabInd);
+
+/* ================= TABS ================= */
+const TAB_ORDER = ["beranda","absensi","siswa","nilai"];
+let lastTab = "beranda";
+async function showTab(name, dir){
+  if(!dir) dir = TAB_ORDER.indexOf(name) >= TAB_ORDER.indexOf(lastTab) ? "fwd" : "back";
+  lastTab = name;
+  const bar = document.querySelector(".tabbar");
+  if(bar) bar.style.display = "";
+  document.querySelectorAll(".tab").forEach(t =>
+    t.classList.toggle("active", t.dataset.tab === name));
+  moveTabInd();
+  document.querySelectorAll(".screen").forEach(s => {
+    const on = s.id === "scr-"+name;
+    s.classList.toggle("active", on);
+    if(on) s.dataset.dir = dir;
+  });
+  window.scrollTo(0,0);
+  enterAnim = true;
+  if(name === "beranda") await renderBeranda();
+  if(name === "absensi") await renderAbsensi();
+  if(name === "siswa") renderSiswa();
+  if(name === "nilai") await renderNilai();
+  entrance(document.getElementById("scr-"+name));
+  enterAnim = false;
+}
+
+/* ================= BERANDA ================= */
+function renderDcAvatars(){
+  const cols = ["#8B7CF6","#F6A9C0","#5B87D6","#F2B84B"];
+  let h = "";
+  for(let i=0;i<3;i++){
+    h += '<span class="av" style="background:'+cols[i%cols.length]+'">'+initials(STUDENTS[i])+"</span>";
+  }
+  h += '<span class="av more">+29</span>';
+  $("#dcAvatars").innerHTML = h;
+}
+async function renderBeranda(){
+  const today = isoOf(jakartaDate());
+  $("#berandaDate").textContent = fmtLong(today);
+  const rec = (await db.getAllAbsensi())[today] || null;
+  let h=0, s=0, i=0;
+  if(rec) Object.keys(rec).forEach(k => {
+    if(rec[k]==="H") h++; else if(rec[k]==="S") s++; else if(rec[k]==="I") i++;
+  });
+  const total = STUDENTS.length;
+  const pct = rec ? Math.round(h/total*100) : 0;
+  $("#miniPct").style.width = pct+"%";
+  $("#dcHadirPct").textContent = pct+"%";
+  $("#dcHadirLine").textContent = rec ? h+"/"+total+" hadir" : "Belum diisi hari ini";
+  const grd = (await db.getNilai())[curMapel] || {};
+  const vals = STUDENTS.map(n => grd[n]).filter(v => typeof v === "number");
+  const avg = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : "–";
+  $("#dcNilaiLine").textContent = curMapel+" \u00B7 "+avg;
+  const jw = jadwalHariIni();
+  $("#dcJadwalLine").textContent = jw.list ? jw.list.length+" JP · "+jw.nama : "Libur · "+jw.nama;
+  document.querySelector("#jadwalCard .card-title").textContent = "Jadwal · "+jw.nama;
+  $("#jadwalList").innerHTML = jw.list
+    ? jw.list.map((m,k) =>
+      '<div class="jadwal'+(enterAnim?' anim':'')+'" style="--i:'+k+'"><span class="time">'+(k+1)+'</span>'+
+      '<span class="mapel">'+m+'</span></div>').join("")
+    : '<p class="small muted" style="padding:10px 0">Hari libur, selamat istirahat!</p>';
+  await updateSyncInfo();
+}
+
+/* ================= ABSENSI ================= */
+let selDate = isoOf(jakartaDate());
+let draft = {};
+async function loadDraft(){
+  const dayRec = (await db.getAllAbsensi())[selDate] || {};
+  draft = {};
+  STUDENTS.forEach(n => draft[n] = dayRec[n] || "H");
+}
+function hadirCount(rec){
+  return Object.keys(rec).filter(k => rec[k]==="H").length;
+}
+async function renderBars(){
+  const days = [shiftISO(selDate,-2), shiftISO(selDate,-1), selDate];
+  const att = await db.getAllAbsensi();
+  const data = days.map(d => {
+    let cnt;
+    if(d === selDate){ cnt = hadirCount(draft); }
+    else { const r = att[d]; cnt = r ? hadirCount(r) : 0; }
+    return {d:d, cnt:cnt};
+  });
+  const max = Math.max(1, Math.max.apply(null, data.map(x => x.cnt)));
+  $("#bars3").innerHTML = data.map((x,k) => {
+    const d = parseISO(x.d);
+    const lbl = d.getDate()+" "+BULAN[d.getMonth()].slice(0,3);
+    const hgt = 52 + Math.round(x.cnt/max*108);
+    return '<div class="bar-col"><div class="pill'+(enterAnim?' bar-grow':'')+'" style="height:'+hgt+'px;--i:'+k+'">'+
+      "<b>"+x.cnt+"</b><span>hadir</span></div>"+
+      '<div class="bar-lbl">'+lbl+"</div></div>";
+  }).join("");
+}
+async function renderAbsensi(){
+  $("#absensiDateLabel").textContent = fmtLong(selDate);
+  const dp = $("#datePicker");
+  if(dp.value !== selDate) dp.value = selDate;
+  const c = {H:0,S:0,I:0,A:0};
+  Object.keys(draft).forEach(k => { if(c[draft[k]] !== undefined) c[draft[k]]++; });
+  if(enterAnim){ countUp($("#statHadir"), c.H); countUp($("#statSakit"), c.S); }
+  else { $("#statHadir").textContent = c.H; $("#statSakit").textContent = c.S; }
+  $("#absensiSummary").innerHTML =
+    "<b>"+c.H+" Hadir</b> &bull; <b>"+c.S+" Sakit</b> &bull; "+
+    "<b>"+c.I+" Izin</b> &bull; <b>"+c.A+" Alpa</b>";
+  await renderBars();
+  $("#absensiList").innerHTML = STUDENTS.map((n, idx) => {
+    const st = draft[n];
+    return '<div class="row'+(enterAnim?' anim':'')+'" style="--i:'+idx+'" data-i="'+idx+'">'+
+      '<div class="avatar" style="background:'+AVC[idx%AVC.length]+'">'+initials(n)+'</div>'+
+      '<div class="row-main"><div class="row-name">'+n+'</div>'+
+      '<div class="row-sub">No. absen '+(idx+1)+'</div></div>'+
+      '<span class="badge '+STATUS_CLASS[st]+'">'+STATUS_LABEL[st]+'</span></div>';
+  }).join("");
+}
+
+/* ================= SISWA ================= */
+function renderSiswa(){
+  const q = ($("#searchSiswa").value || "").toLowerCase().trim();
+  const list = STUDENTS.map((n,i) => ({n:n, i:i}))
+                       .filter(o => o.n.toLowerCase().indexOf(q) !== -1);
+  $("#siswaList").innerHTML = list.length ? list.map((o,k) =>
+    '<div class="row'+(enterAnim?' anim':'')+'" style="--i:'+k+'" data-i="'+o.i+'">'+
+    '<div class="avatar" style="background:'+AVC[o.i%AVC.length]+'">'+initials(o.n)+'</div>'+
+    '<div class="row-main"><div class="row-name">'+o.n+'</div>'+
+    '<div class="row-sub">No. absen '+(o.i+1)+'</div></div>'+
+    '<span class="chev">&#8250;</span></div>').join("")
+    : '<p class="muted center">Siswa tidak ditemukan</p>';
+}
+async function openSiswaDetail(idx){
+  const n = STUDENTS[idx];
+  const prefix = isoOf(jakartaDate()).slice(0,7);
+  const att = await db.getAllAbsensi();
+  const c = {H:0,S:0,I:0,A:0};
+  Object.keys(att).forEach(k => {
+    if(k.indexOf(prefix) === 0 && att[k][n] && c[att[k][n]] !== undefined) c[att[k][n]]++;
+  });
+  const chip = (lbl,val,bg) =>
+    '<div class="mini" style="background:'+bg+'"><div class="n">'+val+'</div>'+
+    '<div class="l">'+lbl+'</div></div>';
+  openSheet(
+    '<button class="sheet-x" onclick="closeSheet()" aria-label="Tutup">&times;</button>'+
+    '<div class="sheet-head">'+
+      '<div class="avatar big" style="background:'+AVC[idx%AVC.length]+'">'+initials(n)+'</div>'+
+      '<h3>'+n+'</h3>'+
+      '<p class="muted small" style="margin:0">No. absen '+(idx+1)+' &bull; Kelas 4A</p>'+
+    '</div>'+
+    '<p class="fld-label">Ringkasan kehadiran bulan ini</p>'+
+    '<div class="ministats">'+
+      chip("Hadir",c.H,"#DDF6D9")+chip("Sakit",c.S,"#FFF3C9")+
+      chip("Izin",c.I,"#DCEBFF")+chip("Alpa",c.A,"#FFE0E6")+
+    '</div>'
+  );
+}
+
+/* ================= NILAI ================= */
+let curMapel = "Matematika";
+async function renderNilai(){
+  const sel = $("#mapelSelect");
+  if(!sel.options.length){
+    SUBJECTS.forEach(s => {
+      const o = document.createElement("option");
+      o.value = s; o.textContent = s;
+      sel.appendChild(o);
+    });
+  }
+  sel.value = curMapel;
+  const rec = (await db.getNilai())[curMapel] || {};
+  const vals = STUDENTS.map(n => rec[n]).filter(v => typeof v === "number");
+  const avg = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
+  if(enterAnim && avg !== null) countUp($("#avgLabel"), avg);
+  else $("#avgLabel").textContent = avg === null ? "–" : avg;
+  $("#nilaiList").innerHTML = STUDENTS.map((n, idx) => {
+    const v = rec[n];
+    return '<div class="row'+(enterAnim?' anim':'')+'" style="cursor:default;--i:'+idx+'">'+
+      '<div class="avatar" style="background:'+AVC[idx%AVC.length]+'">'+initials(n)+'</div>'+
+      '<div class="row-main"><div class="row-name">'+n+'</div>'+
+      '<div class="row-sub">No. absen '+(idx+1)+'</div></div>'+
+      '<input class="score" type="number" min="0" max="100" data-n="'+n+'" '+
+        'value="'+(typeof v==="number"?v:"")+'" placeholder="0–100" aria-label="Nilai '+n+'">'+
+      '</div>';
+  }).join("");
+}
+
+/* ================= EVENTS ================= */
+document.querySelectorAll(".tab").forEach(t =>
+  t.addEventListener("click", () => showTab(t.dataset.tab)));
+async function dismissOnboarding(){
+  await db.metaSet("onboarded", true);
+  $("#onboarding").style.display = "none";
+  showLogin();
+}
+$("#btnMulai").addEventListener("click", dismissOnboarding);
+$("#btnMulai2").addEventListener("click", dismissOnboarding);
+document.querySelectorAll("[data-go]").forEach(c =>
+  c.addEventListener("click", () => {
+    const t = c.dataset.go;
+    if(t === "jadwal"){
+      const el = $("#jadwalCard");
+      if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
+      return;
+    }
+    showTab(t, "fwd");
+  }));
+document.querySelectorAll("[data-back]").forEach(b =>
+  b.addEventListener("click", () => showTab("beranda", "back")));
+$("#btnBell").addEventListener("click", () => toast("Belum ada notifikasi baru"));
+$("#btnSimpanPin").addEventListener("click", doSimpanPin);
+$("#btnMasuk").addEventListener("click", doMasuk);
+[["pinBaru","pin"],["pinKonfirmasi","pin"],["pinMasuk","masuk"]].forEach(([id]) => {
+  const el = document.getElementById(id);
+  if(el) el.addEventListener("keydown", e => {
+    if(e.key === "Enter"){
+      if(id === "pinMasuk") doMasuk(); else doSimpanPin();
+    }
+  });
+});
+$("#btnLogout").addEventListener("click", async () => {
+  if(confirm("Keluar dari aplikasi?")){
+    await db.metaSet("session", null);
+    showLogin();
+  }
+});
+$("#btnAbsMenu").addEventListener("click", () => toast("Absensi tersimpan otomatis per tanggal"));
+$("#btnProgMenu").addEventListener("click", () => toast("Grafik 3 hari terakhir"));
+$("#btnGoSearch").addEventListener("click", () => {
+  showTab("siswa");
+  setTimeout(() => { const s = $("#searchSiswa"); if(s) s.focus(); }, 350);
+});
+$("#prevDay").addEventListener("click", async () => {
+  selDate = shiftISO(selDate, -1); await loadDraft(); await renderAbsensi();
+});
+$("#nextDay").addEventListener("click", async () => {
+  selDate = shiftISO(selDate, 1); await loadDraft(); await renderAbsensi();
+});
+$("#datePicker").addEventListener("change", async e => {
+  if(e.target.value){ selDate = e.target.value; await loadDraft(); await renderAbsensi(); }
+});
+$("#absensiList").addEventListener("click", e => {
+  const row = e.target.closest(".row");
+  if(!row) return;
+  const idx = +row.dataset.i;
+  const n = STUDENTS[idx];
+  draft[n] = STATUS_ORDER[(STATUS_ORDER.indexOf(draft[n])+1) % STATUS_ORDER.length];
+  renderAbsensi();
+  const badge = document.querySelector('#absensiList .row[data-i="'+idx+'"] .badge');
+  if(badge){ badge.classList.remove("pop"); void badge.offsetWidth; badge.classList.add("pop"); }
+});
+$("#btnAllHadir").addEventListener("click", () => {
+  STUDENTS.forEach(n => draft[n] = "H");
+  renderAbsensi();
+});
+$("#btnSimpanAbsensi").addEventListener("click", async () => {
+  const att = await db.getAllAbsensi();
+  att[selDate] = Object.assign({}, draft);
+  await db.setAllAbsensi(att);
+  toast("Absensi "+fmtShort(selDate)+" tersimpan");
+});
+$("#searchSiswa").addEventListener("input", renderSiswa);
+$("#siswaList").addEventListener("click", e => {
+  const row = e.target.closest(".row");
+  if(row) openSiswaDetail(+row.dataset.i);
+});
+$("#scrim").addEventListener("click", closeSheet);
+$("#mapelSelect").addEventListener("change", e => {
+  curMapel = e.target.value;
+  renderNilai();
+});
+$("#btnSimpanNilai").addEventListener("click", async () => {
+  const inputs = document.querySelectorAll("#nilaiList .score");
+  for(const inp of inputs){
+    const v = parseInt(inp.value, 10);
+    if(isNaN(v)) continue;
+    await db.setNilai(curMapel, inp.dataset.n, Math.max(0, Math.min(100, v)));
+  }
+  renderNilai();
+  toast("Nilai "+curMapel+" tersimpan");
+});
+
+/* ================= LOGIN ================= */
+async function hashPin(pin){
+  const salted = "kelasku4a:" + pin;
+  try{
+    if(window.crypto && crypto.subtle){
+      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(salted));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
+    }
+  }catch(e){ /* pakai fallback di bawah */ }
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for(let i=0;i<salted.length;i++){
+    const ch = salted.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1>>>16), 2246822507) ^ Math.imul(h2 ^ (h2>>>13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2>>>16), 2246822507) ^ Math.imul(h1 ^ (h1>>>13), 3266489909);
+  return (h2>>>0).toString(16).padStart(8,"0") + (h1>>>0).toString(16).padStart(8,"0");
+}
+function shakeCard(){
+  if(REDUCED) return;
+  const c = $("#loginCard");
+  c.classList.remove("shake");
+  void c.offsetWidth;
+  c.classList.add("shake");
+}
+async function showLogin(){
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  const bar = document.querySelector(".tabbar");
+  if(bar) bar.style.display = "none";
+  document.querySelectorAll(".screen").forEach(s => {
+    const on = s.id === "scr-login";
+    s.classList.toggle("active", on);
+    if(on) s.dataset.dir = "fwd";
+  });
+  window.scrollTo(0,0);
+  const hasPin = !!(await db.metaGet("pin_hash", null));
+  $("#loginSetup").style.display = hasPin ? "none" : "";
+  $("#loginMasuk").style.display = hasPin ? "" : "none";
+  ["pinBaru","pinKonfirmasi","pinMasuk"].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = "";
+  });
+  $("#setupErr").textContent = "";
+  $("#masukErr").textContent = "";
+  entrance($("#scr-login"));
+}
+async function doSimpanPin(){
+  const p1 = $("#pinBaru").value.trim(), p2 = $("#pinKonfirmasi").value.trim();
+  const err = $("#setupErr");
+  err.textContent = "";
+  if(!/^\d{6}$/.test(p1)){ err.textContent = "PIN harus 6 digit angka"; shakeCard(); return; }
+  if(p1 !== p2){ err.textContent = "Konfirmasi PIN tidak cocok"; shakeCard(); return; }
+  await db.metaSet("pin_hash", await hashPin(p1));
+  await db.metaSet("session", "1");
+  toast("PIN tersimpan. Selamat datang!");
+  showTab("beranda", "fwd");
+}
+async function doMasuk(){
+  const p = $("#pinMasuk").value.trim();
+  const err = $("#masukErr");
+  err.textContent = "";
+  if(!/^\d{6}$/.test(p)){ err.textContent = "Masukkan 6 digit PIN"; shakeCard(); return; }
+  if(await hashPin(p) === await db.metaGet("pin_hash", null)){
+    await db.metaSet("session", "1");
+    showTab("beranda", "fwd");
+  }else{
+    err.textContent = "PIN salah, coba lagi";
+    $("#pinMasuk").value = "";
+    shakeCard();
+    $("#pinMasuk").focus();
+  }
+}
+
+/* ================= SINKRONISASI EXCEL ================= */
+function xlsxReady(){ return typeof XLSX !== "undefined"; }
+
+/* Parse sheet "Daftar Hadir" -> {year, month, records, matched, skipped}.
+   ws: worksheet SheetJS. records: {iso: {nama: "H"|"S"|"I"|"A"}} */
+function parseDaftarHadir(ws, students){
+  if(!ws || !ws["!ref"]) return {error:"Sheet kosong"};
+  const range = XLSX.utils.decode_range(ws["!ref"]);
+  // C4 (baris 4, kolom C) berisi "Oktober 2026"
+  const c4cell = ws[XLSX.utils.encode_cell({r:3, c:2})];
+  let year = null, month = null;
+  if(c4cell && c4cell.v != null){
+    const m = String(c4cell.v).trim().match(/([A-Za-z]+)\s+(\d{4})/);
+    if(m){ month = BULAN_MAP[m[1].toLowerCase()] || null; year = parseInt(m[2],10); }
+  }
+  if(!year || !month) return {error:"Tidak menemukan bulan/tahun di sel C4"};
+  // Baris 7 (r=6): tanggal 1..31 mulai kolom D (c=3)
+  const dates = {};
+  for(let c=3; c<=range.e.c; c++){
+    const cell = ws[XLSX.utils.encode_cell({r:6, c:c})];
+    const day = cell && cell.v != null ? parseInt(cell.v, 10) : NaN;
+    if(day >= 1 && day <= 31) dates[c] = day;
+  }
+  if(!Object.keys(dates).length) return {error:"Tidak menemukan tanggal di baris 7"};
+  // Baris 8+ (r=7+): nama siswa di kolom C (c=2)
+  const nameSet = {};
+  students.forEach(n => nameSet[n.trim()] = true);
+  const records = {};
+  let matched = 0, skipped = 0;
+  for(let r=7; r<=range.e.r; r++){
+    const nc = ws[XLSX.utils.encode_cell({r:r, c:2})];
+    const name = nc && nc.v != null ? String(nc.v).trim() : "";
+    if(!name) continue;
+    if(!nameSet[name]){ skipped++; continue; }
+    matched++;
+    for(const cs in dates){
+      const c = parseInt(cs, 10);
+      const cell = ws[XLSX.utils.encode_cell({r:r, c:c})];
+      const v = cell && cell.v != null ? String(cell.v).trim().toLowerCase() : "";
+      const code = EXCEL2APP[v];
+      if(!code) continue;
+      const iso = year+"-"+String(month).padStart(2,"0")+"-"+String(dates[c]).padStart(2,"0");
+      if(!records[iso]) records[iso] = {};
+      records[iso][name] = code;
+    }
+  }
+  return {year:year, month:month, records:records, matched:matched, skipped:skipped};
+}
+
+async function updateSyncInfo(){
+  const el = $("#syncInfo");
+  if(!el) return;
+  const srv = await db.metaGet("excel_server_ts", null);
+  const ts = await db.metaGet("excel_sync", null);
+  const fmtT = t => {
+    const d = new Date(t);
+    return fmtShort(isoOf(d)) + ", " +
+      d.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",timeZone:"Asia/Jakarta"}) + " WIB";
+  };
+  if(srv){
+    el.textContent = "Data Excel: " + srv.bulan + " (diperbarui " + fmtT(srv.updated_at) + ")";
+  }else if(ts){
+    el.textContent = "Data terakhir: " + fmtT(ts);
+  }else{
+    el.textContent = "Belum pernah sinkron.";
+  }
+}
+
+/* Tarik data absensi langsung dari server (data.json, hasil baca workbook OneDrive).
+   explicit=false (otomatis saat buka): hanya menambah tanggal yang belum ada di HP,
+   tidak menimpa. explicit=true (tombol): data Excel menang untuk tanggal yang dicakup. */
+async function tarikData(explicit){
+  try{
+    const res = await fetch("data.json?t=" + Date.now(), {cache:"no-store"});
+    if(!res.ok) throw 0;
+    const srv = await res.json();
+    if(!srv || !srv.attendance) throw 0;
+    const att = await db.getAllAbsensi();
+    let added = 0, updated = 0;
+    Object.keys(srv.attendance).forEach(iso => {
+      const hasLocal = att[iso] && Object.keys(att[iso]).length;
+      if(!hasLocal){ att[iso] = srv.attendance[iso]; added++; }
+      else if(explicit){ att[iso] = srv.attendance[iso]; updated++; }
+    });
+    await db.setAllAbsensi(att);
+    await db.metaSet("excel_sync", Date.now());
+    if(srv.updated_at) await db.metaSet("excel_server_ts", {bulan: srv.bulan || "", updated_at: srv.updated_at});
+    await loadDraft();
+    await renderBeranda();
+    if($("#scr-absensi").classList.contains("active")) await renderAbsensi();
+    if(explicit){
+      toast("Data diperbarui: " + (added + updated) + " tanggal dari Excel" +
+        (srv.bulan ? " (" + srv.bulan + ")" : ""));
+    }
+    return true;
+  }catch(e){
+    if(explicit) toast("Gagal menarik data. Periksa koneksi internet.");
+    return false;
+  }
+}
+
+function onTarikClick(){ tarikData(true); }
+
+function onImporClick(){
+  if(!xlsxReady()){
+    toast("Butuh internet untuk memuat pustaka Excel sekali saja");
+    return;
+  }
+  $("#fileImpor").click();
+}
+
+async function onFileImpor(e){
+  const f = e.target.files[0];
+  e.target.value = "";
+  if(!f) return;
+  if(f.size > 10*1024*1024){ toast("File terlalu besar (maks 10 MB)"); return; }
+  try{
+    const buf = await f.arrayBuffer();
+    const wb = XLSX.read(buf, {type:"array"});
+    const sname = wb.SheetNames.find(n => n.toLowerCase() === "daftar hadir") || wb.SheetNames[0];
+    if(!sname){ toast("File Excel tidak berisi sheet"); return; }
+    const res = parseDaftarHadir(wb.Sheets[sname], STUDENTS);
+    if(res.error){ toast(res.error); return; }
+    const isos = Object.keys(res.records).sort();
+    if(!isos.length){ toast("Tidak ada data absensi di file ini"); return; }
+    const att = await db.getAllAbsensi();
+    const existing = isos.filter(iso => att[iso] && Object.keys(att[iso]).length);
+    let overwrite = true;
+    if(existing.length){
+      overwrite = confirm(existing.length + " tanggal sudah ada datanya (" +
+        existing.map(fmtShort).join(", ") + "). Timpa dengan data Excel?");
+    }
+    let n = 0;
+    isos.forEach(iso => {
+      if(!overwrite && att[iso] && Object.keys(att[iso]).length) return;
+      att[iso] = res.records[iso];
+      n += Object.keys(res.records[iso]).length;
+    });
+    await db.setAllAbsensi(att);
+    await db.metaSet("excel_sync", Date.now());
+    await loadDraft();
+    await renderBeranda();
+    if($("#scr-absensi").classList.contains("active")) await renderAbsensi();
+    let msg = "Impor selesai: " + n + " data, " + res.matched + " siswa, " +
+              BULAN[res.month-1] + " " + res.year;
+    if(res.skipped) msg += " (" + res.skipped + " nama tak dikenal dilewati)";
+    toast(msg);
+  }catch(err){
+    toast("Gagal membaca file Excel");
+  }
+}
+
+async function onEksporClick(){
+  if(!xlsxReady()){
+    toast("Butuh internet untuk memuat pustaka Excel sekali saja");
+    return;
+  }
+  const att = await db.getAllAbsensi();
+  const rows = [["Tanggal","No","Nama","Status"]];
+  Object.keys(att).sort().forEach(iso => {
+    STUDENTS.forEach((n, i) => {
+      const code = att[iso][n];
+      if(!code || !STATUS_LABEL[code]) return;
+      rows.push([fmtShort(iso), i+1, n, STATUS_LABEL[code]]);
+    });
+  });
+  if(rows.length === 1){ toast("Belum ada data absensi untuk diekspor"); return; }
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws["!cols"] = [{wch:18},{wch:5},{wch:32},{wch:10}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Absensi");
+  const fname = "Absensi-Kelas-4A-" + isoOf(jakartaDate()).replace(/-/g,"") + ".xlsx";
+  XLSX.writeFile(wb, fname);
+  toast("File Excel diunduh: " + fname);
+}
+
+/* ================= BACKUP / RESTORE DATABASE ================= */
+$("#btnBackupDb").addEventListener("click", async () => {
+  try{
+    const {blob, name} = await db.backupBlob();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+    toast("Database diunduh: " + name);
+  }catch(e){ toast("Gagal membuat backup"); }
+});
+$("#btnRestoreDb").addEventListener("click", () => $("#fileRestoreDb").click());
+$("#fileRestoreDb").addEventListener("change", async e => {
+  const f = e.target.files[0];
+  e.target.value = "";
+  if(!f) return;
+  if(!confirm("Restore akan MENGGANTI seluruh data aplikasi dengan isi file backup. Lanjutkan?")) return;
+  try{
+    await db.restoreFromFile(f);
+    await loadDraft();
+    const activeTab = document.querySelector(".tab.active");
+    await showTab(activeTab ? activeTab.dataset.tab : "beranda");
+    toast("Restore database selesai");
+  }catch(err){
+    toast("Gagal restore: file tidak valid");
+  }
+});
+
+/* ================= INIT ================= */
+(async function init(){
+  await db.init();
+  renderDcAvatars();
+  await loadDraft();
+$("#btnImpor").addEventListener("click", onImporClick);
+$("#fileImpor").addEventListener("change", onFileImpor);
+$("#btnEkspor").addEventListener("click", onEksporClick);
+$("#btnTarik").addEventListener("click", onTarikClick);
+/* Otomatis tarik data terbaru tiap aplikasi dibuka (non-destruktif) */
+tarikData(false);
+if(await db.metaGet("onboarded", false)){
+  $("#onboarding").style.display = "none";
+  if(await db.metaGet("session", null) === "1") showTab("beranda");
+  else showLogin();
+}
+})();
+</script>
+</body>
+</html>
