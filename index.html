@@ -300,7 +300,7 @@ select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xm
       </header>
 
       <div class="hero">
-        <p>Selamat datang kembali</p>
+        <p id="heroDate">Hari ini</p>
         <h2>Kelas 4A</h2>
         <p class="hero-sub" id="heroCount">32 siswa</p>
       </div>
@@ -954,7 +954,9 @@ async function showTab(name, dir){
 async function renderBeranda(){
   const today = isoOf(jakartaDate());
   $("#berandaDate").textContent = fmtLong(today);
-  $("#heroCount").textContent = STUDENTS.length + " siswa";
+  $("#heroDate").textContent = fmtLong(today);
+  const jw0 = jadwalHariIni();
+  $("#heroCount").textContent = STUDENTS.length + " siswa" + (jw0.list ? " · " + jw0.list.length + " JP hari ini" : "");
   const rec = (await db.getAllAbsensi())[today] || null;
   let h=0, s=0, i=0, a=0;
   if(rec) Object.keys(rec).forEach(k => {
