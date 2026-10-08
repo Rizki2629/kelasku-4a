@@ -3,158 +3,134 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#8B7CF6">
-<title>KelasKu 4A — Aplikasi Manajemen Kelas</title>
+<meta name="theme-color" content="#315C45">
+<title>KelasKu 4A — Pengelolaan Kelas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --mint:#D9F0E5; --lav:#E7DFF8; --lav-deep:#C9B6E9; --yellow:#FCE9A6; --peach:#FBDCC3;
-  --accent:#8B7CF6; --accent-dark:#6F5FE0;
-  --ink:#2E2A33; --gray:#9A9AA3;
-  --cream:#FFFBF2; --card:#FFFFFF;
-  --shadow:0 10px 26px rgba(90,70,160,.10);
-  --shadow-lg:0 18px 44px rgba(90,70,160,.16);
-  --ease:cubic-bezier(.22,.8,.36,1);
+  --primary:#315C45; --primary-dark:#244735; --primary-light:#E8F0EA;
+  --bg:#F7F5EF; --surface:#FFFFFF; --surface-alt:#F1F0EA;
+  --text:#252525; --text-secondary:#66645E; --text-muted:#85827A;
+  --border:#E2E0D8;
+  --success:#39734A; --warning:#B98228; --danger:#B54A4A; --info:#4B6F91;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth}
 html,body{margin:0;padding:0}
 body{
-  font-family:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-  background:var(--cream);color:var(--ink);overflow-x:hidden;
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg);color:var(--text);
+  -webkit-font-smoothing:antialiased;
 }
-.wrap{max-width:1100px;margin:0 auto;padding:0 22px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 24px}
 
-/* ---------- navbar ---------- */
-.nav{position:sticky;top:0;z-index:100;background:rgba(255,251,242,.82);
-  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
-  border-bottom:1px solid rgba(90,70,160,.08)}
-.nav-in{max-width:1100px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;gap:18px}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
-.brand-ico{width:40px;height:40px;border-radius:14px;background:var(--lav);
-  display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
-.brand-ico svg{width:22px;height:22px;stroke:var(--accent-dark);fill:none;stroke-width:2.2;
-  stroke-linecap:round;stroke-linejoin:round}
-.brand b{font-size:18px;font-weight:900;letter-spacing:-.3px}
-.nav-links{margin-left:auto;display:flex;align-items:center;gap:6px}
-.nav-links a.nl{font-weight:800;font-size:14.5px;color:var(--ink);text-decoration:none;
-  padding:10px 14px;border-radius:999px}
-.nav-links a.nl:hover{background:var(--lav)}
-.btn-pill{display:inline-block;border:0;border-radius:999px;background:var(--ink);color:#fff;
-  font-family:inherit;font-weight:800;font-size:15px;padding:14px 28px;cursor:pointer;
-  text-decoration:none;box-shadow:0 10px 22px rgba(46,42,51,.25);
-  transition:transform .14s ease-out}
-.btn-pill:active{transform:scale(.95)}
-.btn-pill.sm{padding:11px 22px;font-size:14px}
-.btn-outline{display:inline-block;border-radius:999px;background:#fff;color:var(--ink);
-  font-family:inherit;font-weight:800;font-size:15px;padding:14px 28px;cursor:pointer;
-  text-decoration:none;box-shadow:var(--shadow);transition:transform .14s ease-out}
-.btn-outline:active{transform:scale(.95)}
+/* ---------- navigasi ---------- */
+.nav{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.nav-in{max-width:1100px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;gap:28px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand-mark{width:34px;height:34px;border-radius:9px;background:var(--primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px}
+.brand-name{font-size:17px;font-weight:700;color:var(--primary);letter-spacing:-.2px}
+.nav-links{margin-left:auto;display:flex;align-items:center;gap:4px}
+.nav-links a.nl{font-weight:500;font-size:14.5px;color:var(--text-secondary);text-decoration:none;
+  padding:10px 14px;border-radius:9px;min-height:44px;display:inline-flex;align-items:center}
+.nav-links a.nl:hover{color:var(--text);background:var(--surface-alt)}
+
+/* ---------- tombol ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border-radius:10px;min-height:44px;padding:0 22px;
+  font-family:inherit;font-weight:600;font-size:15px;cursor:pointer;text-decoration:none;
+  transition:background .1s ease}
+.btn-primary{background:var(--primary);color:#fff;border:0}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-primary:active{background:var(--primary-dark);transform:scale(.98)}
+.btn-secondary{background:var(--surface);color:var(--text);border:1px solid #DAD8D0}
+.btn-secondary:hover{background:var(--surface-alt)}
+.btn-secondary:active{transform:scale(.98)}
+.btn-sm{min-height:40px;padding:0 18px;font-size:14px}
 
 /* ---------- hero ---------- */
-.hero{position:relative;padding:64px 0 40px;overflow:hidden}
-.blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55;pointer-events:none}
-.blob.b1{width:420px;height:420px;background:#DCCFF5;top:-120px;right:-100px}
-.blob.b2{width:340px;height:340px;background:var(--mint);bottom:-140px;left:-120px}
-.sparkle{position:absolute;pointer-events:none;animation:twinkle 2.6s ease-in-out infinite}
-.sparkle svg{width:100%;height:100%;fill:#fff;filter:drop-shadow(0 2px 6px rgba(139,124,246,.4))}
-@keyframes twinkle{0%,100%{opacity:.35;transform:scale(.8) rotate(0deg)}
-  50%{opacity:1;transform:scale(1.15) rotate(10deg)}}
-.hero-grid{position:relative;display:grid;grid-template-columns:1.05fr .95fr;
-  gap:44px;align-items:center}
-.badge{display:inline-block;background:var(--lav);color:var(--accent-dark);
-  font-weight:800;font-size:13px;padding:8px 16px;border-radius:999px;margin-bottom:18px}
-.hero h1{font-size:52px;font-weight:900;line-height:1.12;letter-spacing:-1px;margin:0 0 18px}
-.hero h1 .hl{color:var(--accent-dark)}
-.hero p.sub{font-size:17px;font-weight:600;color:#6E6A77;line-height:1.65;margin:0 0 30px;max-width:480px}
-.hero-cta{display:flex;gap:14px;flex-wrap:wrap}
+.hero{background:var(--bg)}
+.hero-grid{max-width:1100px;margin:0 auto;padding:80px 24px;display:grid;
+  grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.eyebrow{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:1.4px;
+  color:var(--primary);margin:0 0 16px}
+.hero h1{font-size:48px;font-weight:700;line-height:1.1;letter-spacing:-0.025em;
+  margin:0 0 18px;max-width:560px}
+.hero p.lead{font-size:17px;line-height:1.7;color:var(--text-secondary);font-weight:400;
+  margin:0 0 30px;max-width:500px}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap}
 
-/* phone mockup */
-.phone-stage{display:flex;justify-content:center}
-.phone-frame{width:284px;height:592px;background:#1e1b24;border-radius:52px;padding:12px;
-  box-shadow:var(--shadow-lg),0 0 0 2px rgba(90,70,160,.12);position:relative;flex-shrink:0}
-.phone-frame::before{content:"";position:absolute;top:24px;left:50%;transform:translateX(-50%);
-  width:96px;height:26px;background:#1e1b24;border-radius:999px;z-index:3}
-.phone-screen{width:100%;height:100%;border-radius:42px;overflow:hidden;background:var(--cream);position:relative}
-.phone-screen iframe{width:400px;height:844px;border:0;transform:scale(.635);
-  transform-origin:top left;pointer-events:none}
+/* ---------- preview aplikasi ---------- */
+.preview{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  box-shadow:0 8px 24px rgba(30,30,30,.08);overflow:hidden;max-width:420px;margin:0 auto;width:100%}
+.pv-head{padding:16px 18px;border-bottom:1px solid var(--border)}
+.pv-head .t1{font-size:15px;font-weight:700;margin:0}
+.pv-head .t2{font-size:12.5px;color:var(--text-muted);font-weight:500;margin:3px 0 0}
+.pv-hero{background:var(--primary);color:#fff;padding:16px 18px}
+.pv-hero p{margin:0;font-size:12.5px;opacity:.85;font-weight:500}
+.pv-hero h3{margin:4px 0 2px;font-size:19px;font-weight:700;letter-spacing:-.2px}
+.pv-hero .s{font-size:12.5px;opacity:.85;font-weight:500}
+.pv-strip{display:flex;border-bottom:1px solid var(--border)}
+.pv-cell{flex:1;padding:11px 6px;text-align:center;border-left:1px solid var(--border)}
+.pv-cell:first-child{border-left:0}
+.pv-cell .n{font-size:17px;font-weight:700;line-height:1.1}
+.pv-cell .l{font-size:10.5px;color:var(--text-muted);font-weight:600;margin-top:3px}
+.pv-cell.ok .n{color:var(--success)}
+.pv-cell.warn .n{color:var(--warning)}
+.pv-sec{padding:14px 18px;border-bottom:1px solid var(--border)}
+.pv-sec:last-child{border-bottom:0}
+.pv-label{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+  color:var(--text-muted);margin:0 0 10px}
+.pv-tl{position:relative;padding-left:18px}
+.pv-tl::before{content:"";position:absolute;left:5px;top:8px;bottom:8px;width:2px;background:var(--border)}
+.pv-tl-item{position:relative;padding:5px 0;font-size:13.5px}
+.pv-tl-item::before{content:"";position:absolute;left:-17px;top:11px;width:8px;height:8px;
+  border-radius:50%;background:var(--primary)}
+.pv-tl-item .time{color:var(--text-muted);font-weight:600;font-size:12px;margin-right:8px}
+.pv-tl-item .mapel{font-weight:600}
+.pv-act{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:13.5px}
+.pv-act .nm{font-weight:500}
+.pv-act .st{font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px}
+.st-s{background:#F5EBD7;color:var(--warning)}
 
-/* ---------- stats strip ---------- */
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:44px 0 8px}
-.stat{background:#fff;border-radius:28px;box-shadow:var(--shadow);padding:26px 20px;text-align:center}
-.stat b.num{font-size:44px;font-weight:900;color:var(--accent-dark);display:block;line-height:1}
-.stat span.lbl{font-size:14px;font-weight:800;color:var(--gray);display:block;margin-top:8px}
-
-/* ---------- sections ---------- */
-section.block{padding:64px 0 8px}
-.sec-head{text-align:center;max-width:620px;margin:0 auto 36px}
-.sec-head h2{font-size:36px;font-weight:900;letter-spacing:-.6px;margin:0 0 12px}
-.sec-head p{font-size:16px;font-weight:600;color:#6E6A77;margin:0;line-height:1.6}
-
-/* fitur cards */
-.feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.feat{border-radius:28px;padding:24px 20px;box-shadow:var(--shadow);transition:transform .14s ease-out}
-.feat:active{transform:scale(.98)}
-.feat.mint{background:var(--mint)} .feat.lav{background:var(--lav)}
-.feat.peach{background:var(--peach)} .feat.yel{background:var(--yellow)}
-.feat-ico{width:52px;height:52px;border-radius:18px;background:#fff;display:flex;
-  align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(60,40,120,.08);margin-bottom:16px}
-.feat-ico svg{width:26px;height:26px;stroke:var(--ink);fill:none;stroke-width:2;
+/* ---------- fitur ---------- */
+.features{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.features .wrap{padding-top:72px;padding-bottom:72px}
+.sec-title{font-size:30px;font-weight:700;letter-spacing:-.02em;margin:0 0 12px;text-align:center}
+.sec-sub{font-size:16px;color:var(--text-secondary);margin:0 0 36px;text-align:center;font-weight:400}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.feat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px}
+.feat-ico{margin-bottom:16px}
+.feat-ico svg{width:22px;height:22px;stroke:var(--primary);fill:none;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round}
-.feat h3{font-size:19px;font-weight:900;margin:0 0 8px}
-.feat p{font-size:14px;font-weight:600;color:#5d5a66;margin:0;line-height:1.6}
+.feat h3{font-size:17px;font-weight:700;margin:0 0 8px;letter-spacing:-.1px}
+.feat p{font-size:14.5px;color:var(--text-secondary);margin:0;line-height:1.65;font-weight:400}
 
-/* keunggulan */
-.adv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.adv{background:#fff;border-radius:28px;box-shadow:var(--shadow);padding:26px 22px;display:flex;gap:16px}
-.adv-ico{width:52px;height:52px;border-radius:50%;background:var(--lav);flex-shrink:0;
-  display:flex;align-items:center;justify-content:center}
-.adv-ico svg{width:26px;height:26px;stroke:var(--accent-dark);fill:none;stroke-width:2;
-  stroke-linecap:round;stroke-linejoin:round}
-.adv h3{font-size:17px;font-weight:900;margin:2px 0 6px}
-.adv p{font-size:14px;font-weight:600;color:#6E6A77;margin:0;line-height:1.6}
-
-/* CTA */
-.cta{background:var(--lav);border-radius:34px;box-shadow:var(--shadow-lg);
-  padding:56px 32px;text-align:center;position:relative;overflow:hidden}
-.cta h2{font-size:34px;font-weight:900;letter-spacing:-.6px;margin:0 0 12px}
-.cta p{font-size:16px;font-weight:600;color:#5d5a66;margin:0 0 28px}
-
-/* footer */
-footer{padding:44px 0 34px;text-align:center}
-footer p{font-size:13.5px;font-weight:700;color:var(--gray);margin:4px 0}
-
-/* ---------- reveal animation ---------- */
-.reveal{opacity:0;transform:translateY(18px)}
-.reveal.in{animation:fadeUp .5s var(--ease) forwards;animation-delay:calc(var(--i,0)*70ms)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
-    transition-duration:.01ms!important}
-  html{scroll-behavior:auto}
-  .reveal{opacity:1;transform:none}
-}
+/* ---------- footer ---------- */
+footer{background:var(--primary);color:#fff}
+footer .wrap{padding-top:40px;padding-bottom:40px}
+footer .f-title{font-size:18px;font-weight:700;margin:0 0 8px;letter-spacing:-.2px}
+footer p{font-size:14px;margin:0;opacity:.85;font-weight:400;line-height:1.7}
 
 @media (max-width:900px){
-  .hero-grid{grid-template-columns:1fr;text-align:center}
-  .hero p.sub{margin-left:auto;margin-right:auto}
-  .hero-cta{justify-content:center}
-  .feat-grid{grid-template-columns:repeat(2,1fr)}
-  .hero h1{font-size:38px}
+  .hero-grid{grid-template-columns:1fr;padding:56px 24px;gap:40px}
+  .hero h1{font-size:34px}
+  .feat-grid{grid-template-columns:1fr}
 }
 @media (max-width:640px){
   .nav-links a.nl{display:none}
-  .feat-grid{grid-template-columns:1fr}
-  .adv-grid{grid-template-columns:1fr}
-  .stats{grid-template-columns:1fr 1fr;gap:12px}
-  .stats .stat:last-child{grid-column:1/-1}
-  section.block{padding:44px 0 8px}
-  .sec-head h2{font-size:28px}
-  .cta h2{font-size:26px}
-  .cta{padding:40px 22px}
+  .wrap{padding:0 16px}
+  .nav-in{padding:0 16px}
+  .hero-grid{padding:48px 16px}
+  .features .wrap{padding-top:52px;padding-bottom:52px}
+  .sec-title{font-size:24px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition-duration:.01ms!important}
 }
 </style>
 </head>
@@ -163,151 +139,92 @@ footer p{font-size:13.5px;font-weight:700;color:var(--gray);margin:4px 0}
 <nav class="nav">
   <div class="nav-in">
     <a class="brand" href="#">
-      <span class="brand-ico">
-        <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4H6.5A2.5 2.5 0 0 0 4 6.5v13z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>
-      </span>
-      <b>KelasKu 4A</b>
+      <span class="brand-mark">4A</span>
+      <span class="brand-name">KelasKu</span>
     </a>
     <div class="nav-links">
+      <a class="nl" href="#">Beranda</a>
       <a class="nl" href="#fitur">Fitur</a>
-      <a class="nl" href="#keunggulan">Keunggulan</a>
-      <a class="btn-pill sm" href="index.html">Buka Aplikasi</a>
+      <a class="nl" href="#tentang">Tentang</a>
+      <a class="btn btn-primary btn-sm" href="index.html" style="margin-left:8px">Masuk</a>
     </div>
   </div>
 </nav>
 
 <header class="hero">
-  <div class="blob b1"></div>
-  <div class="blob b2"></div>
-  <span class="sparkle" style="width:26px;height:26px;top:12%;left:8%"><svg viewBox="0 0 24 24"><path d="M12 2l2.2 6.6L21 11l-6.8 2.4L12 20l-2.2-6.6L3 11l6.8-2.4z"/></svg></span>
-  <span class="sparkle" style="width:18px;height:18px;top:70%;left:44%;animation-delay:.8s"><svg viewBox="0 0 24 24"><path d="M12 2l2.2 6.6L21 11l-6.8 2.4L12 20l-2.2-6.6L3 11l6.8-2.4z"/></svg></span>
-  <span class="sparkle" style="width:22px;height:22px;top:20%;right:6%;animation-delay:1.4s"><svg viewBox="0 0 24 24"><path d="M12 2l2.2 6.6L21 11l-6.8 2.4L12 20l-2.2-6.6L3 11l6.8-2.4z"/></svg></span>
-
-  <div class="wrap hero-grid">
+  <div class="hero-grid">
     <div>
-      <span class="badge reveal">Untuk Guru Kelas</span>
-      <h1 class="reveal" style="--i:1">Kelola Kelas 4A dalam <span class="hl">Satu Genggaman</span></h1>
-      <p class="sub reveal" style="--i:2">Absensi, data siswa, dan nilai — 32 siswa Kelas 4A SDN Grogol Utara 09, tersimpan otomatis di perangkat, bisa offline.</p>
-      <div class="hero-cta reveal" style="--i:3">
-        <a class="btn-pill" href="index.html">Buka Aplikasi</a>
-        <a class="btn-outline" href="#fitur">Lihat Fitur</a>
+      <p class="eyebrow">KELAS 4A</p>
+      <h1>Kelola kelas lebih sederhana.</h1>
+      <p class="lead">Satu tempat untuk mengelola siswa, kehadiran, nilai, jadwal, dan aktivitas kelas 4A.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="index.html">Masuk ke KelasKu</a>
+        <a class="btn btn-secondary" href="#fitur">Lihat Fitur</a>
       </div>
     </div>
-    <div class="phone-stage reveal" style="--i:2">
-      <div class="phone-frame">
-        <div class="phone-screen">
-          <iframe src="index.html" title="Pratinjau aplikasi KelasKu 4A" loading="lazy"></iframe>
+    <div class="preview" aria-label="Pratinjau aplikasi KelasKu 4A">
+      <div class="pv-head">
+        <p class="t1">Kelas 4A</p>
+        <p class="t2">SDN Grogol Utara 09</p>
+      </div>
+      <div class="pv-hero">
+        <p>Selamat datang</p>
+        <h3>Kelas 4A</h3>
+        <p class="s">32 siswa aktif</p>
+      </div>
+      <div class="pv-strip">
+        <div class="pv-cell ok"><div class="n">30</div><div class="l">Hadir</div></div>
+        <div class="pv-cell warn"><div class="n">2</div><div class="l">Sakit</div></div>
+        <div class="pv-cell"><div class="n">0</div><div class="l">Izin</div></div>
+        <div class="pv-cell"><div class="n">0</div><div class="l">Alpa</div></div>
+      </div>
+      <div class="pv-sec">
+        <p class="pv-label">Jadwal hari ini</p>
+        <div class="pv-tl">
+          <div class="pv-tl-item"><span class="time">1</span><span class="mapel">Seni Rupa</span></div>
+          <div class="pv-tl-item"><span class="time">4</span><span class="mapel">P. Pancasila</span></div>
+          <div class="pv-tl-item"><span class="time">6</span><span class="mapel">P. Agama</span></div>
         </div>
+      </div>
+      <div class="pv-sec">
+        <p class="pv-label">Aktivitas terbaru</p>
+        <div class="pv-act"><span class="nm">Eliza Safira Nurrohmah</span><span class="st st-s">Sakit</span></div>
+        <div class="pv-act"><span class="nm">Ahmad Fauzi Rohman</span><span class="st st-s">Sakit</span></div>
       </div>
     </div>
   </div>
 </header>
 
-<div class="wrap">
-  <div class="stats">
-    <div class="stat reveal"><b class="num" data-count="32">0</b><span class="lbl">Siswa</span></div>
-    <div class="stat reveal" style="--i:1"><b class="num" data-count="4">0</b><span class="lbl">Fitur Utama</span></div>
-    <div class="stat reveal" style="--i:2"><b class="num" data-count="100" data-suffix="%">0</b><span class="lbl">Offline</span></div>
-  </div>
-
-  <section class="block" id="fitur">
-    <div class="sec-head reveal">
-      <h2>Semua yang dibutuhkan wali kelas</h2>
-      <p>Empat fitur utama yang menemani kegiatan mengajar sehari-hari.</p>
-    </div>
+<section class="features" id="fitur">
+  <div class="wrap">
+    <h2 class="sec-title">Semua kebutuhan kelas, di satu tempat.</h2>
+    <p class="sec-sub">Tiga hal utama yang dipakai setiap hari di kelas 4A.</p>
     <div class="feat-grid">
-      <div class="feat mint reveal">
-        <div class="feat-ico"><svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></div>
-        <h3>Beranda</h3>
-        <p>Sapaan personal, statistik kehadiran hari ini, dan jadwal pelajaran dalam satu layar.</p>
-      </div>
-      <div class="feat lav reveal" style="--i:1">
-        <div class="feat-ico"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4a3 3 0 0 1 6 0"/><path d="M9 12l2 2 4-4"/></svg></div>
+      <div class="feat">
+        <div class="feat-ico"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4a3 3 0 0 1 6 0"/><path d="M9 13l2 2 4-4"/></svg></div>
         <h3>Absensi</h3>
-        <p>Tap untuk tandai Hadir, Sakit, Izin, atau Alpa. Grafik kehadiran 3 hari tersimpan otomatis.</p>
+        <p>Catat kehadiran siswa dengan cepat setiap hari.</p>
       </div>
-      <div class="feat peach reveal" style="--i:2">
-        <div class="feat-ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
+      <div class="feat">
+        <div class="feat-ico"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3.5 20c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M17.5 15.2c1.7.8 2.7 2.3 3 4.8"/></svg></div>
         <h3>Data Siswa</h3>
-        <p>Pencarian cepat 32 siswa dan riwayat kehadiran tiap anak dalam satu ketukan.</p>
+        <p>Kelola data siswa kelas 4A dengan lebih teratur.</p>
       </div>
-      <div class="feat yel reveal" style="--i:3">
+      <div class="feat">
         <div class="feat-ico"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
         <h3>Nilai</h3>
-        <p>Input nilai per mapel dan pantau rata-rata kelas secara otomatis.</p>
+        <p>Pantau perkembangan dan nilai siswa dalam satu tempat.</p>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="block" id="keunggulan">
-    <div class="sec-head reveal">
-      <h2>Kenapa KelasKu 4A?</h2>
-      <p>Ringan, sederhana, dan menghormati data Anda.</p>
-    </div>
-    <div class="adv-grid">
-      <div class="adv reveal">
-        <div class="adv-ico"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg></div>
-        <div><h3>Offline-first</h3><p>Data tersimpan di perangkat via localStorage — tetap berjalan tanpa internet.</p></div>
-      </div>
-      <div class="adv reveal" style="--i:1">
-        <div class="adv-ico"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M11 18.5h2"/></svg></div>
-        <div><h3>Tanpa instal</h3><p>Buka lewat browser HP, tanpa unduh aplikasi atau daftar akun.</p></div>
-      </div>
-      <div class="adv reveal" style="--i:2">
-        <div class="adv-ico"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
-        <div><h3>Privasi</h3><p>Data tidak dikirim ke mana-mana — sepenuhnya milik Anda di perangkat sendiri.</p></div>
-      </div>
-    </div>
-  </section>
+<footer id="tentang">
+  <div class="wrap">
+    <p class="f-title">KelasKu 4A</p>
+    <p>Aplikasi pengelolaan kelas<br>SDN Grogol Utara 09</p>
+  </div>
+</footer>
 
-  <section class="block">
-    <div class="cta reveal">
-      <h2>Siap mengelola kelas lebih mudah?</h2>
-      <p>Buka aplikasinya sekarang — gratis, tanpa instal, langsung pakai.</p>
-      <a class="btn-pill" href="index.html">Buka KelasKu 4A</a>
-    </div>
-  </section>
-
-  <footer>
-    <p><b>KelasKu 4A</b> — dibuat untuk Kelas 4A, SDN Grogol Utara 09</p>
-    <p>&copy; 2026</p>
-  </footer>
-</div>
-
-<script>
-(function(){
-  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  /* reveal on scroll */
-  var io = new IntersectionObserver(function(entries){
-    entries.forEach(function(e){
-      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
-    });
-  }, {threshold:.12});
-  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
-
-  /* count-up stats */
-  function countUp(el){
-    var target = parseInt(el.getAttribute('data-count'),10) || 0;
-    var suffix = el.getAttribute('data-suffix') || '';
-    if(reduce){ el.textContent = target + suffix; return; }
-    var t0 = null, dur = 900;
-    function step(ts){
-      if(!t0) t0 = ts;
-      var p = Math.min((ts - t0)/dur, 1);
-      var eased = 1 - Math.pow(1-p, 3);
-      el.textContent = Math.round(target * eased) + suffix;
-      if(p < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
-  var cio = new IntersectionObserver(function(entries){
-    entries.forEach(function(e){
-      if(e.isIntersecting){ countUp(e.target); cio.unobserve(e.target); }
-    });
-  }, {threshold:.4});
-  document.querySelectorAll('.num').forEach(function(el){ cio.observe(el); });
-})();
-</script>
 </body>
 </html>
