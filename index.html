@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
 <style>
@@ -257,20 +258,29 @@ select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xm
 .onb-inner h1{font-size:26px;font-weight:700;margin:0 0 10px;letter-spacing:-.3px}
 .onb-inner p{font-size:14.5px;color:var(--muted);font-weight:500;line-height:1.6;margin:0 0 28px}
 
-/* ---------- login ---------- */
-.login-wrap{max-width:380px;margin:0 auto;padding:56px 4px 20px}
-.login-brand{text-align:center;margin-bottom:28px}
-.login-logo{width:64px;height:64px;border-radius:16px;background:var(--primary);color:#fff;
-  display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;margin:0 auto 14px}
-.login-brand h1{font-size:24px;font-weight:700;margin:0;letter-spacing:-.3px}
-.login-brand p{color:var(--muted);font-size:14px;font-weight:500;margin:6px 0 0}
-.login-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px}
-.pin-input{width:100%;min-height:52px;border:1px solid #D8D6CE;border-radius:9px;padding:12px 10px;
-  font-family:inherit;font-weight:700;font-size:22px;text-align:center;letter-spacing:10px;
-  text-indent:10px;color:var(--text);background:var(--surface);outline:none;margin-bottom:12px}
-.pin-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(49,92,69,.10)}
-.login-err{color:var(--danger);font-size:13px;font-weight:600;text-align:center;min-height:20px;margin:2px 0 10px}
-@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+/* ---------- login (slider) ---------- */
+#scr-login{background:#DFF0E4;font-family:'Poppins',system-ui,sans-serif;position:relative;overflow:hidden}
+#scr-login .blob{position:absolute;border-radius:50%;opacity:.55;pointer-events:none}
+#scr-login .blob.b1{width:72vw;max-width:480px;aspect-ratio:1;background:#B5E3C4;top:-18vw;right:-16vw}
+#scr-login .blob.b2{width:56vw;max-width:380px;aspect-ratio:1;background:#F5E6B8;bottom:-12vw;left:-14vw}
+.login-wrap{max-width:400px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:32px 20px;position:relative;z-index:2}
+.login-illus{width:88%;aspect-ratio:13/10;object-fit:cover;border-radius:20px;
+  box-shadow:0 14px 32px rgba(30,58,42,.14)}
+.login-title{font-size:clamp(26px,7vw,32px);font-weight:800;color:#1E3A2A;text-align:center;
+  line-height:1.15;margin:26px 0 0;letter-spacing:-.5px}
+.login-title span{color:#2E7D4F}
+.login-sub{font-size:clamp(13px,3.6vw,15px);font-weight:500;color:#4A6B57;text-align:center;margin:10px 0 0}
+.login-slider{position:relative;width:100%;height:60px;background:#EDF5EF;border-radius:999px;
+  margin-top:34px;overflow:hidden;box-shadow:0 8px 20px rgba(30,58,42,.10);touch-action:none;user-select:none}
+.login-slider .ls-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:#CDE8D6;border-radius:999px}
+.login-slider .ls-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;color:#4A6B57;pointer-events:none}
+.login-slider .ls-thumb{position:absolute;left:5px;top:5px;width:50px;height:50px;background:#2E7D4F;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;
+  font-size:22px;font-weight:800;box-shadow:0 6px 14px rgba(46,125,79,.4);cursor:grab}
+.login-slider.done .ls-thumb{cursor:default}
+.login-cap{margin-top:22px;font-size:12.5px;font-weight:600;color:#4A6B57;text-align:center}
 .shake{animation:shake .4s}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
@@ -487,29 +497,18 @@ select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xm
     </section>
   
     <section class="screen" id="scr-login">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
       <div class="login-wrap">
-        <div class="login-brand">
-          <div class="login-logo">4A</div>
-          <h1>KelasKu 4A</h1>
-          <p>SDN Grogol Utara 09</p>
+        <img class="login-illus" src="login-ilustrasi.webp" alt="Guru dan siswa">
+        <h1 class="login-title">Selamat Datang<br><span>Kembali!</span></h1>
+        <p class="login-sub">Kelola absensi, nilai, dan jadwal kelas dengan mudah</p>
+        <div class="login-slider" id="loginSlider" role="button" aria-label="Geser untuk masuk" tabindex="0">
+          <div class="ls-fill" id="lsFill"></div>
+          <div class="ls-txt">Geser untuk masuk</div>
+          <div class="ls-thumb" id="lsThumb">→</div>
         </div>
-        <div class="login-card" id="loginCard">
-          <div id="loginSetup">
-            <label class="fld-label" for="pinBaru">Buat PIN (6 digit angka)</label>
-            <input class="pin-input" id="pinBaru" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="new-password" aria-label="Buat PIN">
-            <label class="fld-label" for="pinKonfirmasi">Konfirmasi PIN</label>
-            <input class="pin-input" id="pinKonfirmasi" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="new-password" aria-label="Konfirmasi PIN">
-            <p class="login-err" id="setupErr"></p>
-            <button class="btn-primary" id="btnSimpanPin">Simpan PIN</button>
-          </div>
-          <div id="loginMasuk" style="display:none">
-            <label class="fld-label" for="pinMasuk">PIN (6 digit angka)</label>
-            <input class="pin-input" id="pinMasuk" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="current-password" aria-label="PIN">
-            <p class="login-err" id="masukErr"></p>
-            <button class="btn-primary" id="btnMasuk">Masuk</button>
-          </div>
-        </div>
-        <p class="hint">PIN tersimpan hanya di perangkat ini</p>
+        <p class="login-cap">SDN Grogol Utara 09 · Kelas 4A</p>
       </div>
     </section>
 
@@ -1658,16 +1657,6 @@ $("#btnSalinSakit").addEventListener("click", async () => {
 });
 const bt = $("#btnTentang");
 if(bt) bt.addEventListener("click", () => toast("KelasKu 4A \u2014 aplikasi pendamping wali kelas 4A, SDN Grogol Utara 09"));
-$("#btnSimpanPin").addEventListener("click", doSimpanPin);
-$("#btnMasuk").addEventListener("click", doMasuk);
-[["pinBaru","pin"],["pinKonfirmasi","pin"],["pinMasuk","masuk"]].forEach(([id]) => {
-  const el = document.getElementById(id);
-  if(el) el.addEventListener("keydown", e => {
-    if(e.key === "Enter"){
-      if(id === "pinMasuk") doMasuk(); else doSimpanPin();
-    }
-  });
-});
 $("#btnLogout").addEventListener("click", async () => {
   if(confirm("Keluar dari aplikasi?")){
     await db.metaSet("session", null);
@@ -1811,31 +1800,72 @@ $("#btnSimpanNilai").addEventListener("click", async () => {
   toast("Nilai "+curMapel+" tersimpan");
 });
 
-/* ================= LOGIN ================= */
-async function hashPin(pin){
-  const salted = "kelasku4a:" + pin;
-  try{
-    if(window.crypto && crypto.subtle){
-      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(salted));
-      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
-    }
-  }catch(e){ /* pakai fallback di bawah */ }
-  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
-  for(let i=0;i<salted.length;i++){
-    const ch = salted.charCodeAt(i);
-    h1 = Math.imul(h1 ^ ch, 2654435761);
-    h2 = Math.imul(h2 ^ ch, 1597334677);
-  }
-  h1 = Math.imul(h1 ^ (h1>>>16), 2246822507) ^ Math.imul(h2 ^ (h2>>>13), 3266489909);
-  h2 = Math.imul(h2 ^ (h2>>>16), 2246822507) ^ Math.imul(h1 ^ (h1>>>13), 3266489909);
-  return (h2>>>0).toString(16).padStart(8,"0") + (h1>>>0).toString(16).padStart(8,"0");
+/* ================= LOGIN SLIDER ================= */
+const LS_UNLOCK_PCT = 85; /* drag >= 85% -> masuk */
+function sliderUnlocked(pct){ return pct >= LS_UNLOCK_PCT; }
+let _lsDrag = null;
+function lsReset(animate){
+  const th = $("#lsThumb"), fl = $("#lsFill");
+  if(!th) return;
+  if(animate !== false){ th.style.transition = "left .25s ease"; fl.style.transition = "width .25s ease"; }
+  else{ th.style.transition = "none"; fl.style.transition = "none"; }
+  th.style.left = "5px"; fl.style.width = "0";
 }
-function shakeCard(){
-  if(REDUCED) return;
-  const c = $("#loginCard");
-  c.classList.remove("shake");
-  void c.offsetWidth;
-  c.classList.add("shake");
+function lsMove(clientX){
+  const sl = $("#loginSlider"), th = $("#lsThumb"), fl = $("#lsFill");
+  if(!sl || !_lsDrag) return 0;
+  const r = sl.getBoundingClientRect();
+  const maxX = r.width - th.offsetWidth - 10;
+  let x = clientX - r.left - _lsDrag.off;
+  x = Math.max(0, Math.min(maxX, x));
+  const pct = maxX > 0 ? (x / maxX) * 100 : 0;
+  th.style.transition = "none"; fl.style.transition = "none";
+  th.style.left = (5 + x) + "px"; fl.style.width = (x + th.offsetWidth / 2) + "px";
+  return pct;
+}
+async function lsUnlock(){
+  const sl = $("#loginSlider");
+  sl.classList.add("done");
+  await db.metaSet("session", "1");
+  toast("Selamat datang!");
+  showTab("beranda", "fwd");
+}
+function initLoginSlider(){
+  const sl = $("#loginSlider"), th = $("#lsThumb");
+  if(!sl || !th || sl.dataset.init) return;
+  sl.dataset.init = "1";
+  const start = e => {
+    if(sl.classList.contains("done")) return;
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const tr = th.getBoundingClientRect();
+    _lsDrag = {off: cx - tr.left};
+    e.preventDefault();
+  };
+  const move = e => {
+    if(!_lsDrag) return;
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    _lsDrag.pct = lsMove(cx);
+    e.preventDefault();
+  };
+  const end = () => {
+    if(!_lsDrag) return;
+    const pct = _lsDrag.pct || 0;
+    _lsDrag = null;
+    if(sliderUnlocked(pct)) lsUnlock();
+    else lsReset(true);
+  };
+  th.addEventListener("mousedown", start);
+  th.addEventListener("touchstart", start, {passive:false});
+  window.addEventListener("mousemove", move);
+  window.addEventListener("touchmove", move, {passive:false});
+  window.addEventListener("mouseup", end);
+  window.addEventListener("touchend", end);
+  /* Aksesibilitas: Enter/Space pada slider = masuk */
+  sl.addEventListener("keydown", e => {
+    if((e.key === "Enter" || e.key === " ") && !sl.classList.contains("done")){
+      e.preventDefault(); lsUnlock();
+    }
+  });
 }
 async function showLogin(){
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
@@ -1846,41 +1876,10 @@ async function showLogin(){
     if(on) s.dataset.dir = "fwd";
   });
   window.scrollTo(0,0);
-  const hasPin = !!(await db.metaGet("pin_hash", null));
-  $("#loginSetup").style.display = hasPin ? "none" : "";
-  $("#loginMasuk").style.display = hasPin ? "" : "none";
-  ["pinBaru","pinKonfirmasi","pinMasuk"].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.value = "";
-  });
-  $("#setupErr").textContent = "";
-  $("#masukErr").textContent = "";
-}
-async function doSimpanPin(){
-  const p1 = $("#pinBaru").value.trim(), p2 = $("#pinKonfirmasi").value.trim();
-  const err = $("#setupErr");
-  err.textContent = "";
-  if(!/^\d{6}$/.test(p1)){ err.textContent = "PIN harus 6 digit angka"; shakeCard(); return; }
-  if(p1 !== p2){ err.textContent = "Konfirmasi PIN tidak cocok"; shakeCard(); return; }
-  await db.metaSet("pin_hash", await hashPin(p1));
-  await db.metaSet("session", "1");
-  toast("PIN tersimpan. Selamat datang!");
-  showTab("beranda", "fwd");
-}
-async function doMasuk(){
-  const p = $("#pinMasuk").value.trim();
-  const err = $("#masukErr");
-  err.textContent = "";
-  if(!/^\d{6}$/.test(p)){ err.textContent = "Masukkan 6 digit PIN"; shakeCard(); return; }
-  if(await hashPin(p) === await db.metaGet("pin_hash", null)){
-    await db.metaSet("session", "1");
-    showTab("beranda", "fwd");
-  }else{
-    err.textContent = "PIN salah, coba lagi";
-    $("#pinMasuk").value = "";
-    shakeCard();
-    $("#pinMasuk").focus();
-  }
+  initLoginSlider();
+  const sl = $("#loginSlider");
+  if(sl) sl.classList.remove("done");
+  lsReset(false);
 }
 
 /* ================= SINKRONISASI EXCEL ================= */
