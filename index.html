@@ -197,6 +197,16 @@ select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xm
   font-weight:600;color:var(--text);cursor:pointer;margin-bottom:8px;text-align:left}
 .menu-row:active{background:var(--surface-alt)}
 .menu-row.danger{color:var(--danger)}
+.menu-badge{font-size:12px;font-weight:700;color:var(--primary-dark);background:#E8F0EA;
+  border-radius:999px;padding:4px 10px;margin-left:auto;margin-right:10px;flex-shrink:0}
+.warn-strip{display:flex;align-items:center;gap:10px;width:100%;background:#FDECEC;color:#B54A4A;
+  border:1px solid #F3D2D2;border-radius:10px;padding:12px 14px;font-family:inherit;
+  font-size:13.5px;font-weight:600;text-align:left;cursor:pointer;margin-bottom:16px}
+.warn-strip svg{width:20px;height:20px;stroke:#B54A4A;fill:none;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.pantau-del{border:0;background:none;color:#B9B6AC;font-size:22px;line-height:1;cursor:pointer;
+  padding:6px;flex-shrink:0;font-family:inherit}
+.pantau-del:active{color:var(--danger)}
 
 /* ---------- sheet / toast ---------- */
 .scrim{position:fixed;inset:0;background:rgba(30,30,30,.4);opacity:0;pointer-events:none;
@@ -304,6 +314,11 @@ select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xm
         <h2>Kelas 4A</h2>
         <p class="hero-sub" id="heroCount">32 siswa</p>
       </div>
+
+      <button class="warn-strip" id="pantauWarn" style="display:none">
+        <svg viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+        <span id="pantauWarnText"></span>
+      </button>
 
       <div class="sec">
         <div class="qa-grid">
@@ -481,11 +496,36 @@ select.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xm
       </div>
 
       <div class="menu-group">
+        <p class="menu-label">Pemantauan</p>
+        <button class="menu-row" id="btnPemantauan">Pemantauan Siswa<span class="menu-badge" id="pantauBadge">0</span><span class="chev">&#8250;</span></button>
+      </div>
+
+      <div class="menu-group">
         <p class="menu-label">Aplikasi</p>
         <button class="menu-row" id="btnTentang">Tentang KelasKu 4A<span class="chev">&#8250;</span></button>
         <button class="menu-row danger" id="btnLogout">Keluar<span class="chev">&#8250;</span></button>
       </div>
       <p class="hint">KelasKu 4A &middot; SDN Grogol Utara 09</p>
+    </section>
+
+    <section class="screen" id="scr-pemantauan">
+      <header class="page-head">
+        <button class="icon-btn" id="btnPantauBack" aria-label="Kembali">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h2 class="page-title">Pemantauan Siswa</h2>
+      </header>
+      <p class="date-line" id="pantauSub">Pemantauan kesehatan pasca vaksin DBD</p>
+      <div class="warn-strip" id="pantauRingkasan" style="display:none" role="status"></div>
+      <div id="pantauList"></div>
+      <button class="btn-secondary" id="btnTambahPantau" style="margin-top:6px">+ Tambah Siswa</button>
+      <div id="pantauPicker" style="display:none;margin-top:12px">
+        <div class="search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input id="searchPantau" type="search" placeholder="Cari nama siswa..." autocomplete="off">
+        </div>
+        <div id="pantauTambahList" style="margin-top:8px"></div>
+      </div>
     </section>
   </main>
 
@@ -534,6 +574,13 @@ const STUDENTS = [
   "Zayn Malik Ibrahim","Zhufairah Imaniah"
 ];
 const SUBJECTS = ["Matematika","B. Indonesia","IPAS","PPKn","Seni Rupa"];
+/* Daftar awal siswa dalam pemantauan pasca vaksin DBD */
+const PEMANTAUAN_AWAL = [
+  "Muhamad Athaya Bilal Arifin","Achmad Nafriza Maulana","Muhammad Azril Al-Malik",
+  "Muhammad Irsyan Syahputra","Zayn Malik Ibrahim","Muhammad Abiyan Nabil",
+  "Kheyna Ayudia Santosa","Allysa Ayunda Putri","Arya Bima",
+  "Muhammad Haikal Fajri","Devan Aqlan Junior"
+];
 /* Jadwal Pelajaran Kelas IV A TP 2026/2027 (dari poster jadwal) */
 const JADWAL_HARI = {
   1:["Upacara","P. Pancasila","P. Pancasila","Matematika","Istirahat","Matematika","Matematika","B. Indonesia","B. Indonesia"],
@@ -624,6 +671,7 @@ function closeSheet(){
    (key kelasku4a_sqlite). Jika CDN sql.js gagal dimuat, otomatis pakai
    localStorage seperti sebelumnya. */
 const LS_SQLITE = "kelasku4a_sqlite";
+const LS_PEM = "kelasku4a_pemantauan";
 const LS_MIGRATED = "kelasku4a_migrated_sqlite";
 
 function createTables(sdb){
@@ -631,6 +679,7 @@ function createTables(sdb){
   sdb.run("CREATE TABLE IF NOT EXISTS absensi(tanggal TEXT, nama TEXT, status TEXT, PRIMARY KEY(tanggal,nama))");
   sdb.run("CREATE TABLE IF NOT EXISTS nilai(mapel TEXT, nama TEXT, nilai REAL, PRIMARY KEY(mapel,nama))");
   sdb.run("CREATE TABLE IF NOT EXISTS meta(kunci TEXT PRIMARY KEY, nilai TEXT)");
+  sdb.run("CREATE TABLE IF NOT EXISTS pemantauan(nama TEXT PRIMARY KEY)");
 }
 
 /* Pindahkan SEMUA data localStorage lama -> SQLite. storage: objek mirip
@@ -707,6 +756,11 @@ function seedDefaults(sdb){
     STUDENTS.forEach(nm => sn.run(["Matematika", nm, 70 + Math.floor(Math.random()*26)]));
     sn.free();
   }
+  if(count("pemantauan") === 0){
+    const sp = sdb.prepare("INSERT OR IGNORE INTO pemantauan(nama) VALUES(?)");
+    PEMANTAUAN_AWAL.forEach(nm => sp.run([nm]));
+    sp.free();
+  }
 }
 
 const db = {
@@ -746,6 +800,9 @@ const db = {
         }catch(e){ /* jatuh ke fallback localStorage */ }
       }
       this._mode = "local";
+      try{
+        if(!localStorage.getItem(LS_PEM)) store.set(LS_PEM, PEMANTAUAN_AWAL.slice());
+      }catch(e){}
     })();
     return this._ready;
   },
@@ -829,6 +886,34 @@ const db = {
     }
   },
 
+  /* ---------- pemantauan ---------- */
+  async getPemantauan(){
+    if(this._mode === "sqlite"){
+      const res = this._sdb.exec("SELECT nama FROM pemantauan ORDER BY nama");
+      return res.length ? res[0].values.map(r => r[0]) : [];
+    }
+    return store.get(LS_PEM, []);
+  },
+
+  async addPemantauan(nama){
+    if(this._mode === "sqlite"){
+      this._sdb.run("INSERT OR IGNORE INTO pemantauan(nama) VALUES(?)", [nama]);
+      this._persist();
+    }else{
+      const arr = store.get(LS_PEM, []);
+      if(arr.indexOf(nama) === -1){ arr.push(nama); store.set(LS_PEM, arr); }
+    }
+  },
+
+  async delPemantauan(nama){
+    if(this._mode === "sqlite"){
+      this._sdb.run("DELETE FROM pemantauan WHERE nama=?", [nama]);
+      this._persist();
+    }else{
+      store.set(LS_PEM, store.get(LS_PEM, []).filter(n => n !== nama));
+    }
+  },
+
   /* ---------- meta (onboarded, session, pin_hash, excel_sync, excel_server_ts) ---------- */
   _metaKey(k){ return "kelasku4a_meta_" + k; },
 
@@ -878,6 +963,7 @@ const db = {
       app: "kelasku4a", v: 1,
       absensi: await this.getAllAbsensi(),
       nilai: await this.getNilai(),
+      pemantauan: await this.getPemantauan(),
       meta: {
         onboarded: await this.metaGet("onboarded", false),
         pin_hash: await this.metaGet("pin_hash", null),
@@ -909,6 +995,17 @@ const db = {
     const data = JSON.parse(new TextDecoder().decode(u8));
     if(!data || typeof data !== "object" || !data.absensi) throw new Error("bad-file");
     await this.setAllAbsensi(data.absensi);
+    if(Array.isArray(data.pemantauan)){
+      if(this._mode === "sqlite"){
+        this._sdb.run("DELETE FROM pemantauan");
+        const sp = this._sdb.prepare("INSERT OR IGNORE INTO pemantauan(nama) VALUES(?)");
+        data.pemantauan.forEach(nm => { if(typeof nm === "string") sp.run([nm]); });
+        sp.free();
+        this._persist();
+      }else{
+        store.set(LS_PEM, data.pemantauan.filter(nm => typeof nm === "string"));
+      }
+    }
     if(this._mode === "sqlite"){
       this._sdb.run("DELETE FROM nilai");
       const st = this._sdb.prepare("INSERT INTO nilai(mapel,nama,nilai) VALUES(?,?,?)");
@@ -948,6 +1045,8 @@ async function showTab(name, dir){
   if(name === "absensi") await renderAbsensi();
   if(name === "siswa") renderSiswa();
   if(name === "nilai") await renderNilai();
+  if(name === "pemantauan") await renderPemantauan();
+  if(name === "lainnya") await updatePantauBadge();
 }
 
 /* ================= BERANDA ================= */
@@ -971,6 +1070,19 @@ async function renderBeranda(){
   $("#todayLine").textContent = rec
     ? h + "/" + total + " siswa hadir hari ini"
     : "Absensi hari ini belum diisi";
+  // Strip peringatan: hanya tampil bila ada siswa terpantau yang sakit hari ini
+  try{
+    const pantau = await db.getPemantauan();
+    const sakitHariIni = rec ? pantau.filter(n => rec[n] === "S") : [];
+    const w = $("#pantauWarn");
+    if(sakitHariIni.length){
+      w.style.display = "";
+      $("#pantauWarnText").textContent =
+        sakitHariIni.length + " siswa dalam pemantauan sakit hari ini";
+    }else{
+      w.style.display = "none";
+    }
+  }catch(e){}
   // Jadwal hari ini (timeline)
   const jw = jadwalHariIni();
   $("#jadwalTitle").textContent = "Jadwal · " + jw.nama;
@@ -1101,6 +1213,88 @@ async function renderNilai(){
   }).join("") : '<p class="muted center">Belum ada data nilai untuk mata pelajaran ini.</p>';
 }
 
+/* ================= PEMANTAUAN ================= */
+/* Hitung status 7 hari terakhir (termasuk hari ini) dari data absensi. */
+function pantauStats(nama, att, todayISO){
+  const c = {S:0, I:0, A:0};
+  for(let d=0; d<7; d++){
+    const st = (att[shiftISO(todayISO, -d)] || {})[nama];
+    if(st && c[st] !== undefined) c[st]++;
+  }
+  return c;
+}
+
+async function updatePantauBadge(){
+  const list = await db.getPemantauan();
+  const el = $("#pantauBadge");
+  if(el) el.textContent = list.length;
+  const sub = $("#pantauSub");
+  if(sub) sub.textContent = list.length
+    ? list.length + " siswa dalam pemantauan pasca vaksin DBD"
+    : "Belum ada siswa dalam pemantauan";
+}
+
+let _pantauPick = [];
+async function renderPantauPicker(){
+  const q = ($("#searchPantau").value || "").toLowerCase().trim();
+  const pantau = await db.getPemantauan();
+  const ada = {};
+  pantau.forEach(n => ada[n] = true);
+  _pantauPick = STUDENTS.filter(n => !ada[n] && n.toLowerCase().indexOf(q) !== -1);
+  $("#pantauTambahList").innerHTML = _pantauPick.length ? _pantauPick.map((n,i) =>
+    '<button class="menu-row" data-pick="'+i+'">'+n+'<span class="chev">+</span></button>'
+  ).join("") : '<p class="muted center small">Semua siswa sudah dalam pemantauan.</p>';
+  document.querySelectorAll("[data-pick]").forEach(b =>
+    b.addEventListener("click", async () => {
+      const nama = _pantauPick[+b.dataset.pick];
+      await db.addPemantauan(nama);
+      toast(nama.split(" ")[0] + " ditambahkan ke pemantauan");
+      await renderPemantauan();
+    }));
+}
+
+async function renderPemantauan(){
+  const list = await db.getPemantauan();
+  const att = await db.getAllAbsensi();
+  const today = isoOf(jakartaDate());
+  let sakitCount = 0;
+  const rows = list.map(nama => {
+    const st = pantauStats(nama, att, today);
+    if(st.S > 0) sakitCount++;
+    let badge;
+    if(st.S > 0) badge = '<span class="badge" style="background:#F3E2E2;color:var(--danger)">Sakit '+st.S+' hari</span>';
+    else if(st.I > 0) badge = '<span class="badge st-i">Izin '+st.I+' hari</span>';
+    else badge = '<span class="badge st-h">Sehat</span>';
+    return '<div class="row"><div class="avatar">'+initials(nama)+'</div>'+
+      '<div class="row-main"><div class="row-name">'+nama+'</div>'+
+      '<div class="row-sub">7 hari terakhir</div></div>'+
+      badge+
+      '<button class="pantau-del" data-nama="'+nama.replace(/"/g,"&quot;")+'" aria-label="Hapus dari pemantauan">&times;</button></div>';
+  });
+  const rk = $("#pantauRingkasan");
+  if(sakitCount > 0){
+    rk.style.display = "";
+    rk.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>'+
+      '<span>'+sakitCount+' siswa sakit dalam 7 hari terakhir</span>';
+  }else{
+    rk.style.display = "none";
+    rk.innerHTML = "";
+  }
+  $("#pantauList").innerHTML = rows.length ? rows.join("")
+    : '<p class="muted center">Belum ada siswa dalam pemantauan.</p>';
+  document.querySelectorAll(".pantau-del").forEach(b =>
+    b.addEventListener("click", async () => {
+      const nama = b.dataset.nama;
+      if(confirm("Hapus "+nama+" dari daftar pemantauan?")){
+        await db.delPemantauan(nama);
+        await renderPemantauan();
+      }
+    }));
+  await updatePantauBadge();
+  const pk = $("#pantauPicker");
+  if(pk && pk.style.display !== "none") renderPantauPicker();
+}
+
 /* ================= EVENTS ================= */
 document.querySelectorAll(".tab").forEach(t =>
   t.addEventListener("click", () => showTab(t.dataset.tab)));
@@ -1124,6 +1318,18 @@ document.querySelectorAll("[data-back]").forEach(b =>
   b.addEventListener("click", () => showTab("beranda", "back")));
 const bp = $("#btnProfil");
 if(bp) bp.addEventListener("click", () => showTab("lainnya", "fwd"));
+/* ---- Pemantauan ---- */
+$("#btnPemantauan").addEventListener("click", () => showTab("pemantauan", "fwd"));
+$("#btnPantauBack").addEventListener("click", () => showTab("lainnya", "back"));
+$("#pantauWarn").addEventListener("click", () => showTab("pemantauan", "fwd"));
+$("#btnTambahPantau").addEventListener("click", async () => {
+  const p = $("#pantauPicker");
+  const buka = p.style.display === "none";
+  p.style.display = buka ? "" : "none";
+  $("#btnTambahPantau").textContent = buka ? "Tutup" : "+ Tambah Siswa";
+  if(buka) await renderPantauPicker();
+});
+$("#searchPantau").addEventListener("input", renderPantauPicker);
 const bt = $("#btnTentang");
 if(bt) bt.addEventListener("click", () => toast("KelasKu 4A \u2014 aplikasi pendamping wali kelas 4A, SDN Grogol Utara 09"));
 $("#btnSimpanPin").addEventListener("click", doSimpanPin);
