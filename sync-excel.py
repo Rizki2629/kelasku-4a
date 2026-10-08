@@ -46,15 +46,46 @@ def parse(path):
                 n_data += 1
     return {"bulan": c4, "attendance": att, "n_data": n_data, "n_siswa": n_siswa}
 
+
+
+def parse_catatan(wb):
+    """Parse sheet Catatan (Tanggal|Nama|Keterangan) -> list dict."""
+    ws = None
+    for n in wb.sheetnames:
+        if n.lower() == "catatan":
+            ws = wb[n]; break
+    if ws is None:
+        return []
+    out = []
+    for r in range(2, ws.max_row + 1):
+        tgl = ws.cell(row=r, column=1).value
+        nama = ws.cell(row=r, column=2).value
+        ket = ws.cell(row=r, column=3).value
+        if not ket:
+            continue
+        iso = None
+        if hasattr(tgl, "strftime"):
+            iso = tgl.strftime("%Y-%m-%d")
+        elif isinstance(tgl, str) and tgl.strip():
+            iso = tgl.strip()
+        out.append({
+            "tanggal": iso,
+            "nama": str(nama).strip() if nama else "",
+            "keterangan": str(ket).strip(),
+        })
+    return out
+
 if __name__ == "__main__":
     if not XLSM:
         print("Usage: sync-excel.py <file.xlsm>"); sys.exit(1)
     r = parse(XLSM)
+    r2 = parse_catatan(openpyxl.load_workbook(XLSM, data_only=True, read_only=True))
     out = {
         "version": 1,
         "updated_at": datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))).isoformat(timespec="seconds"),
         "bulan": r["bulan"],
         "attendance": r["attendance"],
+        "catatan": r2,
     }
     json.dump(out, open(OUT, "w"), ensure_ascii=False)
     print(f"OK: {r['n_data']} data, {r['n_siswa']} siswa, {len(r['attendance'])} tanggal, bulan {r['bulan']}")
