@@ -1247,15 +1247,32 @@ async function renderNilai(){
 /* ================= PEMANTAUAN ================= */
 /* Hitung status dalam rentang tanggal [dariISO..sampaiISO] inklusif dari data absensi. */
 function pantauStatsRange(nama, att, dariISO, sampaiISO){
-  const c = {S:0, I:0, A:0};
+  const c = {S:0, I:0, A:0, tglS:[], tglI:[], tglA:[]};
   let d = dariISO, guard = 0;
   while(d <= sampaiISO && guard < 400){
     const st = (att[d] || {})[nama];
-    if(st && c[st] !== undefined) c[st]++;
+    if(st === "S"){ c.S++; c.tglS.push(d); }
+    else if(st === "I"){ c.I++; c.tglI.push(d); }
+    else if(st === "A"){ c.A++; c.tglA.push(d); }
     d = shiftISO(d, 1);
     guard++;
   }
   return c;
+}
+/* Format daftar tanggal ringkas: "5, 6 Okt 2026" atau "30 Sep, 2 Okt 2026". */
+function fmtTglSakit(list){
+  if(!list || !list.length) return "";
+  const grup = {};
+  list.forEach(iso => {
+    const d = parseISO(iso), k = d.getFullYear()+"-"+d.getMonth();
+    (grup[k] = grup[k] || []).push(d.getDate());
+  });
+  const namaBln = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+  return Object.keys(grup).sort().map(k => {
+    const t = grup[k];
+    const thn = k.split("-")[0];
+    return t.join(", ")+" "+namaBln[+k.split("-")[1]]+" "+thn;
+  }).join(", ");
 }
 /* Kompatibilitas: 7 hari terakhir termasuk hari ini. */
 function pantauStats(nama, att, todayISO){
@@ -1386,9 +1403,14 @@ async function renderPemantauan(){
     else badge = '<span class="badge st-h">Sehat</span>';
     const ket = isSakit ? keteranganSakit(nama, range.dari, range.sampai) : "";
     if(isSakit && st.S > 0) sickRows.push({nama: nama, ket: ket});
+    /* Sub-label: tampilkan tanggal sakit/izin bila ada, bukan hanya "N hari terakhir". */
+    let subTgl = sub;
+    if(st.S > 0) subTgl = "Sakit: " + fmtTglSakit(st.tglS);
+    else if(st.I > 0) subTgl = "Izin: " + fmtTglSakit(st.tglI);
+    else if(st.A > 0) subTgl = "Alpa: " + fmtTglSakit(st.tglA);
     const subHtml = ket
-      ? '<div class="row-sub">'+esc(ket)+'</div>'
-      : '<div class="row-sub">'+sub+'</div>';
+      ? '<div class="row-sub">'+esc(ket)+'</div><div class="row-sub muted">'+esc(subTgl)+'</div>'
+      : '<div class="row-sub">'+esc(subTgl)+'</div>';
     return {s: st.S, html:
       '<div class="row"><div class="avatar">'+initials(nama)+'</div>'+
       '<div class="row-main"><div class="row-name">'+nama+'</div>'+
