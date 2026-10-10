@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Parse Daftar Hadir dari ADMINISTRASI KELAS.xlsm -> data.json untuk aplikasi KelasKu 4A."""
-import openpyxl, json, sys, datetime
+import openpyxl, json, sys, datetime, os, shutil
 
 XLSM = sys.argv[1] if len(sys.argv) > 1 else None
 OUT = "/home/hatch/workspace/kelas-app/data.json"
@@ -87,6 +87,10 @@ if __name__ == "__main__":
         "attendance": r["attendance"],
         "catatan": r2,
     }
+    # safety: refresh menimpa data.json dari Excel — simpan salinan dulu supaya
+    # catatan yang baru ada di aplikasi (belum masuk Excel) tidak hilang diam-diam.
+    if os.path.exists(OUT):
+        shutil.copy2(OUT, OUT + ".bak")
     json.dump(out, open(OUT, "w"), ensure_ascii=False)
     print(f"OK: {r['n_data']} data, {r['n_siswa']} siswa, {len(r['attendance'])} tanggal, bulan {r['bulan']}")
     print("->", OUT)
