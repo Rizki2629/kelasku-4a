@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-29",
+  "updated_at": "2026-10-30",
   "bulan": "Oktober 2026",
   "attendance": {
     "2026-10-01": {
@@ -614,6 +614,40 @@
       "Syifa Gita Ramadani": "H",
       "Zayn Malik Ibrahim": "S",
       "Zhufairah Imaniah": "H"
+    },
+    "2026-10-30": {
+      "Abdul Syarif Fawwazi": "H",
+      "Achmad Nafriza Maulana": "H",
+      "Adeeva Afsheen Bahri": "H",
+      "Ahmad Fauzi Rohman": "H",
+      "Aisyah Nuha Zahira": "H",
+      "Al Bian Putra Hidayat": "I",
+      "Allysa Ayunda Putri": "H",
+      "Aqilah Dwi Septiani": "S",
+      "Ariq Algian Prayata Suseno": "H",
+      "Arya Bima": "H",
+      "Cahya Bulan Ramadhani": "H",
+      "Devan Aqlan Junior": "H",
+      "Eliza Safira Nurrohmah": "H",
+      "Hanna Nazifah Amelia": "H",
+      "Keano Aqiel Bintang Utomo": "H",
+      "Kheyna Ayudia Santosa": "H",
+      "Muhamad Athaya Bilal Arifin": "H",
+      "Muhammad Abiyan Nabil": "H",
+      "Muhammad Azril Al-Malik": "H",
+      "Muhammad Haikal Fajri": "H",
+      "Muhammad Irsyan Syahputra": "H",
+      "Muhammad Rasya Ramadhan": "H",
+      "Nadhifa Sagita": "H",
+      "Nino Syahrul Rifai": "H",
+      "Nurulahya": "H",
+      "Rafa Fauzan Kamil": "I",
+      "Reyno Pradipta Putra": "H",
+      "Rizky Yusuf Assik": "H",
+      "Salwa Syifaul Aliya": "S",
+      "Syifa Gita Ramadani": "H",
+      "Zayn Malik Ibrahim": "H",
+      "Zhufairah Imaniah": "H"
     }
   },
   "catatan": [
@@ -826,6 +860,26 @@
       "tanggal": "2026-10-28",
       "nama": "Muhammad Haikal Fajri",
       "keterangan": "berkata kasar dan tidak pantas ke murid kelas 4C yang sedang latihan literasi di perpustakaan"
+    },
+    {
+      "tanggal": "2026-10-30",
+      "nama": "Aqilah Dwi Septiani",
+      "keterangan": "kurang enak badan"
+    },
+    {
+      "tanggal": "2026-10-30",
+      "nama": "Salwa Syifaul Aliya",
+      "keterangan": "demam"
+    },
+    {
+      "tanggal": "2026-10-30",
+      "nama": "Al Bian Putra Hidayat",
+      "keterangan": "izin (urusan keluarga)"
+    },
+    {
+      "tanggal": "2026-10-30",
+      "nama": "Rafa Fauzan Kamil",
+      "keterangan": "izin"
     }
   ]
 }
